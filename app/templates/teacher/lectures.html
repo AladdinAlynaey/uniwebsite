@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Lectures — {{ subject.name if subject }}{% endblock %}
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-book-open me-2 text-primary"></i>Lectures</h2>
+            <p class="text-muted">{{ subject.name if subject }} · {{ batch.name if batch }}</p>
+        </div>
+        <a href="{{ url_for('teacher_bp.subject_overview', subject_id=subject.id, batch_id=batch.id) }}"
+            class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Back</a>
+    </div>
+
+    <!-- Upload Form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-upload me-2"></i>Upload Lecture</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                <div class="row g-3">
+                    <div class="col-md-2"><label class="form-label">Week</label><input type="number"
+                            class="form-control" name="week" min="1" max="20" required></div>
+                    <div class="col-md-3">
+                        <label class="form-label">Type</label>
+                        <select class="form-select" name="lecture_type">
+                            <option>Theoretical</option>
+                            <option>Practical</option>
+                            <option>Workshop</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4"><label class="form-label">File</label><input type="file" class="form-control"
+                            name="lecture_file" required></div>
+                    <div class="col-md-3"><label class="form-label">Description</label><input type="text"
+                            class="form-control" name="description"></div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3"><i class="fas fa-upload me-1"></i>Upload</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lecture List -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Week</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>File</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for l in lectures %}
+                        <tr>
+                            <td>{{ l.get('week', '—') }}</td>
+                            <td><span
+                                    class="badge bg-{{ 'primary' if l.get('lecture_type') == 'Theoretical' else 'success' if l.get('lecture_type') == 'Practical' else 'info' }}">{{
+                                    l.get('lecture_type', '') }}</span></td>
+                            <td>{{ l.get('description', '') }}</td>
+                            <td>{% if l.get('file_name') %}<i class="fas fa-file me-1"></i>{{ l.file_name }}{% else
+                                %}—{% endif %}</td>
+                            <td><small class="text-muted">{{ l.get('created_at', '')[:10] }}</small></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">No lectures uploaded yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

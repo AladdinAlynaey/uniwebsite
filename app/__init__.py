@@ -52,16 +52,23 @@ def create_app():
     from app.routes.admin import admin_bp
     from app.routes.student import student_bp
     from app.routes.api import api_bp
+    from app.routes.superadmin import superadmin_bp
+    from app.routes.faculty_head import faculty_bp
+    from app.routes.teacher import teacher_bp
     
     app.register_blueprint(main_bp)
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(student_bp, url_prefix='/student')
     app.register_blueprint(api_bp, url_prefix='/api')
+    app.register_blueprint(superadmin_bp, url_prefix='/superadmin')
+    app.register_blueprint(faculty_bp, url_prefix='/faculty')
+    app.register_blueprint(teacher_bp, url_prefix='/teacher')
     
     # Initialize Elasticsearch and migrate JSON data (idempotent)
     try:
-        from app.utils.elasticsearch_client import migrate_json_to_es
+        from app.utils.elasticsearch_client import migrate_json_to_es, migrate_hierarchy
         migrate_json_to_es()
+        migrate_hierarchy()
     except Exception as e:
         print(f"⚠️  Elasticsearch migration warning: {e}")
     

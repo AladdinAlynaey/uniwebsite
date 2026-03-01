@@ -1,9 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, send_from_directory
-from app.utils.auth import verify_admin_password
+from app.utils.auth import get_current_user, login_user, logout_user
+from app.models.user import User
 from app.models.news import News
 from app.models.subject import Subject
 from app.models.lecture import Lecture
-from app.models.student import Student
+from app.models.faculty import Faculty
+from app.models.batch import Batch
 from app.utils.gemini_ai import generate_response
 import os
 
@@ -12,20 +14,23 @@ main_bp = Blueprint('main_bp', __name__)
 @main_bp.route('/')
 def index():
     """Home page"""
-    # Get latest news
     latest_news = News.get_latest_news(5)
     
     # Get real statistics
     subjects_count = len(Subject.load_all())
     lectures_count = len(Lecture.load_all())
-    students_count = len(Student.load_all())
+    faculties_count = len(Faculty.load_all())
+    batches_count = len(Batch.load_all())
+    students = User.get_by_role(User.ROLE_STUDENT) if hasattr(User, 'ROLE_STUDENT') else []
+    students_count = len(students)
     
-    # Pass statistics to the template
     return render_template('index.html', 
                            news=latest_news,
                            subjects_count=subjects_count,
                            lectures_count=lectures_count,
-                           students_count=students_count)
+                           students_count=students_count,
+                           faculties_count=faculties_count,
+                           batches_count=batches_count)
 
 @main_bp.route('/news')
 def news():
@@ -45,19 +50,15 @@ def news_detail(news_id):
 @main_bp.route('/subjects')
 def subjects():
     """Subjects page"""
-    # Get all subjects grouped by semester
     all_subjects = Subject.load_all()
     
-    # Get unique semesters from subjects
     semesters = set()
     for subject in all_subjects:
         if 'semester' in subject:
             semesters.add(subject['semester'])
     
-    # Convert to sorted list
     semesters = sorted(list(semesters))
     
-    # Organize subjects by semester
     subjects_by_semester = {}
     for semester in semesters:
         subjects_by_semester[semester] = Subject.get_subjects_by_semester(semester)
@@ -72,7 +73,6 @@ def subject_detail(subject_id):
         flash('Subject not found.', 'danger')
         return redirect(url_for('main_bp.subjects'))
     
-    # Get lectures for this subject
     lectures = Lecture.get_lectures_by_subject(subject_id)
     
     return render_template('subject_detail.html', subject=subject, lectures=lectures)
@@ -85,7 +85,6 @@ def lecture_detail(lecture_id):
         flash('Lecture not found.', 'danger')
         return redirect(url_for('main_bp.subjects'))
     
-    # Get the subject for this lecture
     subject = Subject.find_by_id(lecture.subject_id)
     
     return render_template('lecture_detail.html', lecture=lecture, subject=subject)
@@ -100,7 +99,6 @@ def download_material(material_id):
         flash('Material not found.', 'danger')
         return redirect(url_for('main_bp.index'))
     
-    # Check if the material file exists
     uploads_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'uploads')
     if not os.path.exists(os.path.join(uploads_dir, material.filename)):
         flash('Material file not found.', 'danger')
@@ -116,20 +114,13 @@ def download_lecture_file(lecture_id):
         flash('Lecture not found.', 'danger')
         return redirect(url_for('main_bp.subjects'))
     
-    # Check if the lecture has a file
     if not hasattr(lecture, 'file_name') or not lecture.file_name or not hasattr(lecture, 'file_path') or not lecture.file_path:
         flash('No file available for this lecture.', 'warning')
         return redirect(url_for('main_bp.lecture_detail', lecture_id=lecture_id))
     
-    # Get the file path
     uploads_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'uploads')
     file_path = lecture.file_path
-    
-    # Extract just the filename from the path
     filename = os.path.basename(file_path)
-    
-    # Determine the directory containing the file
-    file_dir = os.path.dirname(os.path.join(uploads_dir, file_path))
     
     if not os.path.exists(os.path.join(uploads_dir, file_path)):
         flash('Lecture file not found on server.', 'danger')
@@ -139,60 +130,109 @@ def download_lecture_file(lecture_id):
                                filename, 
                                as_attachment=True)
 
+
+# ===== UNIFIED LOGIN =====
+
 @main_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    """Admin login page"""
+    """Unified login page — handles all roles."""
+    # If already logged in, redirect to appropriate dashboard
+    user = get_current_user()
+    if user:
+        return _redirect_to_dashboard(user)
+    
     if request.method == 'POST':
-        password = request.form.get('password')
+        email = request.form.get('email', '').lower().strip()
+        password = request.form.get('password', '')
         
-        if verify_admin_password(password):
-            session['is_admin'] = True
+        if not email or not password:
+            flash('Email and password are required.', 'danger')
+            return render_template('login.html')
+        
+        # Find user by email
+        user = User.find_by_email(email)
+        
+        if user and User.check_password(user, password):
+            if not user.get('is_active', True):
+                flash('Your account has been deactivated. Contact an administrator.', 'danger')
+                return render_template('login.html')
+            
+            login_user(user)
+            flash(f'Welcome, {user.get("name", "User")}!', 'success')
+            
             next_page = request.args.get('next')
-            flash('Login successful!', 'success')
-            return redirect(next_page or url_for('admin_bp.dashboard'))
+            if next_page:
+                return redirect(next_page)
+            
+            return _redirect_to_dashboard(user)
         else:
-            flash('Invalid password.', 'danger')
+            flash('Invalid email or password.', 'danger')
     
     return render_template('login.html')
+
 
 @main_bp.route('/logout')
 def logout():
     """Logout route"""
-    session.clear()
+    logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('main_bp.index'))
 
+
 @main_bp.route('/student/login', methods=['GET', 'POST'])
 def student_login():
-    """Student login page"""
-    from app.models.student import Student
+    """Student login — supports both email/password and legacy token."""
+    user = get_current_user()
+    if user and user.get('role') == User.ROLE_STUDENT:
+        return redirect(url_for('student_bp.dashboard'))
     
     if request.method == 'POST':
-        token = request.form.get('token')
-        student = Student.find_by_token(token)
+        # Try token login first (backward compat)
+        token = request.form.get('token', '').strip()
+        email = request.form.get('email', '').lower().strip()
+        password = request.form.get('password', '')
         
-        if student:
-            session['student_token'] = token
-            next_page = request.args.get('next')
-            flash('Login successful!', 'success')
-            return redirect(next_page or url_for('student_bp.dashboard'))
+        found_user = None
+        
+        if token:
+            found_user = User.find_by_token(token)
+            if not found_user:
+                flash('Invalid student token.', 'danger')
+                return render_template('student_login.html')
+        elif email and password:
+            found_user = User.find_by_email(email)
+            if not found_user or not User.check_password(found_user, password):
+                flash('Invalid email or password.', 'danger')
+                return render_template('student_login.html')
+            if found_user.get('role') != User.ROLE_STUDENT:
+                flash('This login is for students only. Use the main login page.', 'danger')
+                return render_template('student_login.html')
         else:
-            flash('Invalid student token.', 'danger')
+            flash('Please enter your token or email/password.', 'danger')
+            return render_template('student_login.html')
+        
+        if found_user:
+            if not found_user.get('is_active', True):
+                flash('Your account has been deactivated.', 'danger')
+                return render_template('student_login.html')
+            
+            login_user(found_user)
+            flash(f'Welcome, {found_user.get("name", "Student")}!', 'success')
+            next_page = request.args.get('next')
+            return redirect(next_page or url_for('student_bp.dashboard'))
     
     return render_template('student_login.html')
+
 
 @main_bp.route('/chatbot', methods=['GET', 'POST'])
 def chatbot():
     """Chatbot page"""
-    # Initialize chat history in session if it doesn't exist
     if 'chat_history' not in session:
         session['chat_history'] = []
     
-    # Ensure chat_history is a list
     if not isinstance(session['chat_history'], list):
         session['chat_history'] = []
     
-    # Check if clear chat action was requested
     if request.args.get('clear') == '1':
         session['chat_history'] = []
         session.modified = True
@@ -206,8 +246,6 @@ def chatbot():
         if query:
             response = generate_response(query, student_token)
             
-            # Add the new message pair to chat history
-            # Ensure response is a string
             if response is None:
                 response = "I'm sorry, I couldn't generate a response at this time."
                 
@@ -216,7 +254,24 @@ def chatbot():
                 'response': response,
                 'timestamp': 'Just now'
             })
-            # Save the updated session
             session.modified = True
     
     return render_template('chatbot.html', chat_history=session['chat_history']) 
+
+
+def _redirect_to_dashboard(user):
+    """Redirect user to their appropriate dashboard based on role."""
+    role = user.get('role')
+    
+    if role == User.ROLE_SUPER_ADMIN:
+        return redirect(url_for('superadmin_bp.dashboard'))
+    elif role == User.ROLE_FACULTY_HEAD:
+        return redirect(url_for('faculty_bp.dashboard'))
+    elif role == User.ROLE_BATCH_REP:
+        return redirect(url_for('admin_bp.dashboard'))
+    elif role == User.ROLE_TEACHER:
+        return redirect(url_for('teacher_bp.dashboard'))
+    elif role == User.ROLE_STUDENT:
+        return redirect(url_for('student_bp.dashboard'))
+    
+    return redirect(url_for('main_bp.index'))

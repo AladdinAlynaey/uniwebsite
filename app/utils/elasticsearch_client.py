@@ -211,3 +211,205 @@ def _migrate_assignments(es, data_dir):
         print(f"  ✅ {index_name}: migrated assignments data")
     except Exception as e:
         print(f"  ❌ assignments.json: migration failed: {e}")
+
+
+def migrate_hierarchy():
+    """Create the university hierarchy (faculty, department, batch) and
+    migrate existing students to the unified User model.
+    
+    This is idempotent — it only runs if the user index is empty or missing.
+    """
+    import uuid
+    from werkzeug.security import generate_password_hash
+    from datetime import datetime
+    
+    es = get_es_client()
+    
+    try:
+        if not es.ping():
+            print("⚠️  Elasticsearch not reachable. Skipping hierarchy migration.")
+            return False
+    except Exception:
+        return False
+    
+    # Ensure all new indices exist
+    new_indices = ['user', 'faculty', 'department', 'batch', 'teachersubject']
+    for idx in new_indices:
+        ensure_index(f"{ES_INDEX_PREFIX}{idx}")
+    
+    # Check if user index already has data → migration already ran
+    user_index = f"{ES_INDEX_PREFIX}user"
+    try:
+        count = es.count(index=user_index)['count']
+        if count > 0:
+            print(f"  ⏭️  Hierarchy migration: already done ({count} users exist)")
+            return True
+    except Exception:
+        pass
+    
+    print("\n  🏛️  Running hierarchy migration...")
+    now = datetime.now().isoformat()
+    
+    # 1. Create default Super Admin
+    admin_id = str(uuid.uuid4())
+    es.index(index=user_index, id=admin_id, document={
+        'id': admin_id,
+        'email': 'admin@university.edu',
+        'password_hash': generate_password_hash('alaadin123'),
+        'name': 'University Admin',
+        'role': 'super_admin',
+        'is_active': True,
+        'faculty_id': None,
+        'department_id': None,
+        'batch_id': None,
+        'created_at': now,
+        'updated_at': now
+    })
+    print("  ✅ Created Super Admin: admin@university.edu / alaadin123")
+    
+    # 2. Create default Faculty
+    faculty_id = str(uuid.uuid4())
+    faculty_index = f"{ES_INDEX_PREFIX}faculty"
+    es.index(index=faculty_index, id=faculty_id, document={
+        'id': faculty_id,
+        'name': 'Faculty of AI & Information Technology',
+        'code': 'AIIT',
+        'description': 'Default faculty created during migration',
+        'head_user_id': '',
+        'created_at': now,
+        'updated_at': now
+    })
+    print("  ✅ Created default Faculty: AIIT")
+    
+    # 3. Create default Department
+    dept_id = str(uuid.uuid4())
+    dept_index = f"{ES_INDEX_PREFIX}department"
+    es.index(index=dept_index, id=dept_id, document={
+        'id': dept_id,
+        'name': 'Artificial Intelligence',
+        'code': 'AI',
+        'faculty_id': faculty_id,
+        'faculty_name': 'Faculty of AI & Information Technology',
+        'description': 'Default department created during migration',
+        'created_at': now,
+        'updated_at': now
+    })
+    print("  ✅ Created default Department: AI")
+    
+    # 4. Create default Batch
+    batch_id = str(uuid.uuid4())
+    batch_index = f"{ES_INDEX_PREFIX}batch"
+    es.index(index=batch_index, id=batch_id, document={
+        'id': batch_id,
+        'name': 'AI Batch 2024',
+        'code': 'AI-2024',
+        'department_id': dept_id,
+        'department_name': 'Artificial Intelligence',
+        'faculty_id': faculty_id,
+        'year': '2024',
+        'rep_user_id': '',
+        'created_at': now,
+        'updated_at': now
+    })
+    print("  ✅ Created default Batch: AI-2024")
+    
+    # 5. Migrate existing students to User model
+    student_index = f"{ES_INDEX_PREFIX}student"
+    try:
+        if es.indices.exists(index=student_index):
+            result = es.search(
+                index=student_index,
+                body={"query": {"match_all": {}}, "size": 10000},
+                request_timeout=30
+            )
+            
+            student_count = 0
+            for hit in result['hits']['hits']:
+                student = hit['_source']
+                student_name = student.get('name', 'Unknown Student')
+                student_email = student.get('email', '')
+                
+                # Generate email if not present
+                if not student_email:
+                    safe_name = student_name.lower().replace(' ', '.').replace("'", '')
+                    student_email = f"{safe_name}@student.university.edu"
+                
+                # Create user record
+                user_id = str(uuid.uuid4())
+                es.index(index=user_index, id=user_id, document={
+                    'id': user_id,
+                    'email': student_email,
+                    'password_hash': generate_password_hash('student123'),
+                    'name': student_name,
+                    'role': 'student',
+                    'is_active': True,
+                    'faculty_id': faculty_id,
+                    'department_id': dept_id,
+                    'batch_id': batch_id,
+                    'token': student.get('token', str(uuid.uuid4())[:8].upper()),
+                    'major': student.get('major', ''),
+                    'level': student.get('level', ''),
+                    'phone': student.get('phone', ''),
+                    'profile_image': student.get('profile_image', ''),
+                    'original_student_id': student.get('id', hit['_id']),
+                    'created_at': student.get('created_at', now),
+                    'updated_at': now
+                })
+                student_count += 1
+            
+            print(f"  ✅ Migrated {student_count} students to User model")
+    except Exception as e:
+        print(f"  ⚠️  Student migration error: {e}")
+    
+    # 6. Add batch_id to existing subjects
+    subject_index = f"{ES_INDEX_PREFIX}subject"
+    try:
+        if es.indices.exists(index=subject_index):
+            result = es.search(
+                index=subject_index,
+                body={"query": {"match_all": {}}, "size": 10000},
+                request_timeout=30
+            )
+            for hit in result['hits']['hits']:
+                doc = hit['_source']
+                if not doc.get('batch_id'):
+                    es.update(index=subject_index, id=hit['_id'], body={
+                        "doc": {
+                            "batch_id": batch_id,
+                            "faculty_id": faculty_id,
+                            "department_id": dept_id
+                        }
+                    })
+            print(f"  ✅ Added batch scoping to existing subjects")
+    except Exception as e:
+        print(f"  ⚠️  Subject scoping error: {e}")
+    
+    # 7. Add batch_id to existing attendance, grades, feedback
+    for model_name in ['attendance', 'grade', 'feedback', 'news']:
+        idx = f"{ES_INDEX_PREFIX}{model_name}"
+        try:
+            if es.indices.exists(index=idx):
+                result = es.search(
+                    index=idx,
+                    body={"query": {"match_all": {}}, "size": 10000},
+                    request_timeout=30
+                )
+                for hit in result['hits']['hits']:
+                    doc = hit['_source']
+                    if not doc.get('batch_id'):
+                        es.update(index=idx, id=hit['_id'], body={
+                            "doc": {"batch_id": batch_id, "faculty_id": faculty_id}
+                        })
+                print(f"  ✅ Added batch scoping to {model_name}")
+        except Exception as e:
+            print(f"  ⚠️  {model_name} scoping error: {e}")
+    
+    # Refresh all indices
+    try:
+        es.indices.refresh(index=f"{ES_INDEX_PREFIX}*")
+    except Exception:
+        pass
+    
+    print("  🎉 Hierarchy migration complete!")
+    return True
+

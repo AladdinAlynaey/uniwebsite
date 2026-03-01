@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block title %}Manage Users{% endblock %}
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-users me-2 text-primary"></i>Users</h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal"><i
+                class="fas fa-user-plus me-1"></i>New User</button>
+    </div>
+
+    <!-- Role Filter -->
+    <div class="mb-3">
+        <select class="form-select w-auto" onchange="window.location.href=this.value">
+            <option value="{{ url_for('superadmin_bp.users') }}" {{ '' if selected_role else 'selected' }}>All Roles
+            </option>
+            {% for r in roles %}
+            <option value="{{ url_for('superadmin_bp.users', role=r) }}" {{ 'selected' if selected_role==r }}>{{
+                r|replace('_',' ')|title }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Scope</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td><strong>{{ u.name }}</strong></td>
+                    <td>{{ u.email }}</td>
+                    <td><span
+                            class="badge bg-{{ 'danger' if u.role == 'super_admin' else 'primary' if u.role == 'faculty_head' else 'success' if u.role == 'teacher' else 'info' if u.role == 'batch_rep' else 'secondary' }}">{{
+                            u.role|replace('_',' ')|title }}</span></td>
+                    <td class="small text-muted">
+                        {% if u.get('batch_id') %}Batch{% elif u.get('department_id') %}Dept{% elif u.get('faculty_id')
+                        %}Faculty{% else %}Global{% endif %}
+                    </td>
+                    <td>
+                        {% if u.get('is_active', True) %}
+                        <span class="badge bg-success">Active</span>
+                        {% else %}
+                        <span class="badge bg-danger">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('superadmin_bp.edit_user', user_id=u.id) }}"
+                            class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></a>
+                        <form method="POST" action="{{ url_for('superadmin_bp.delete_user', user_id=u.id) }}"
+                            class="d-inline" onsubmit="return confirm('Delete this user?')">
+                            <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">No users found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Create User Modal -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('superadmin_bp.create_user') }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create User</h5><button type="button" class="btn-close"
+                        data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Name</label><input type="text"
+                                class="form-control" name="name" required></div>
+                        <div class="col-md-6"><label class="form-label">Email</label><input type="email"
+                                class="form-control" name="email" required></div>
+                        <div class="col-md-6"><label class="form-label">Password</label><input type="password"
+                                class="form-control" name="password" required minlength="6"></div>
+                        <div class="col-md-6">
+                            <label class="form-label">Role</label>
+                            <select class="form-select" name="role" required>
+                                {% for r in roles %}<option value="{{ r }}">{{ r|replace('_',' ')|title }}</option>{%
+                                endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Faculty</label>
+                            <select class="form-select" name="faculty_id">
+                                <option value="">— None —</option>{% for f in faculties %}<option value="{{ f.id }}">{{
+                                    f.name }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Department</label>
+                            <select class="form-select" name="department_id">
+                                <option value="">— None —</option>{% for d in departments %}<option value="{{ d.id }}">
+                                    {{ d.name }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Batch</label>
+                            <select class="form-select" name="batch_id">
+                                <option value="">— None —</option>{% for b in batches %}<option value="{{ b.id }}">{{
+                                    b.name }}</option>{% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal">Cancel</button><button type="submit"
+                        class="btn btn-primary">Create</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

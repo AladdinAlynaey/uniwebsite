@@ -1,81 +1,274 @@
 {% extends "base.html" %}
 
-{% block title %}Student Login - University AI Batch{% endblock %}
+{% block title %}Student Login — University AI Platform{% endblock %}
 
 {% block extra_css %}
 <style>
-    .login-container {
-        min-height: 80vh;
+    .login-wrapper {
+        min-height: calc(100vh - 200px);
         display: flex;
         align-items: center;
-        padding: 2rem 0;
+        justify-content: center;
+        padding: 2rem 1rem;
     }
-    
-    /* Fix button styling in dark mode */
-    [data-theme="dark"] .btn-primary {
-        background: var(--primary) !important;
-        border-color: var(--primary) !important;
-        color: white !important;
+
+    .login-container {
+        width: 100%;
+        max-width: 460px;
     }
-    
-    [data-theme="dark"] .btn-primary:hover {
-        background: var(--primary-hover) !important;
-        border-color: var(--primary-hover) !important;
+
+    .login-card {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
     }
-    
-    /* Fix card styling in dark mode */
-    [data-theme="dark"] .card {
-        background: var(--bg-primary) !important;
-        border-color: var(--border-color) !important;
+
+    .login-header {
+        background: linear-gradient(135deg, #06b6d4, #0891b2, #0e7490);
+        padding: 2.5rem 2rem 2rem;
+        text-align: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
     }
-    
-    [data-theme="dark"] .card-header {
-        background: var(--primary) !important;
-        border-color: var(--primary) !important;
-        color: white !important;
+
+    .login-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+        animation: shimmer 6s ease-in-out infinite;
     }
-    
-    [data-theme="dark"] .card-body {
-        background: var(--bg-primary) !important;
+
+    @keyframes shimmer {
+
+        0%,
+        100% {
+            transform: rotate(0deg)
+        }
+
+        50% {
+            transform: rotate(180deg)
+        }
     }
-    
-    [data-theme="dark"] .card-body p,
-    [data-theme="dark"] .card-body a {
-        color: var(--text-primary) !important;
+
+    .login-header-icon {
+        width: 72px;
+        height: 72px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        margin-bottom: 1rem;
+        position: relative;
     }
-    
-    [data-theme="dark"] .card-body a:hover {
-        color: var(--primary) !important;
+
+    .login-header h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.3rem;
+        position: relative;
+    }
+
+    .login-header p {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+        position: relative;
+    }
+
+    .login-body {
+        padding: 2rem 2rem 1.5rem;
+    }
+
+    .login-footer {
+        padding: 0 2rem 2rem;
+        text-align: center;
+    }
+
+    .tab-group {
+        display: flex;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 2px solid var(--border-color);
+        margin-bottom: 1.5rem;
+    }
+
+    .tab-btn {
+        flex: 1;
+        padding: 0.7rem;
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .tab-btn.active {
+        background: linear-gradient(135deg, #06b6d4, #0891b2);
+        color: white;
+    }
+
+    .tab-panel {
+        display: none;
+    }
+
+    .tab-panel.active {
+        display: block;
+    }
+
+    .form-floating-modern {
+        position: relative;
+        margin-bottom: 1.25rem;
+    }
+
+    .form-floating-modern input {
+        width: 100%;
+        padding: 0.85rem 1rem 0.85rem 2.75rem;
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        font-size: 0.95rem;
+        transition: border-color 0.3s;
+        outline: none;
+    }
+
+    .form-floating-modern input:focus {
+        border-color: #06b6d4;
+        box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.1);
+    }
+
+    .form-floating-modern .input-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .login-btn-primary {
+        width: 100%;
+        padding: 0.85rem;
+        background: linear-gradient(135deg, #06b6d4, #0891b2);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .login-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(6, 182, 212, 0.35);
+    }
+
+    @media (max-width: 576px) {
+        .login-header {
+            padding: 1.75rem 1.25rem 1.5rem;
+        }
+
+        .login-body {
+            padding: 1.5rem 1.25rem 1rem;
+        }
+
+        .login-footer {
+            padding: 0 1.25rem 1.5rem;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="row justify-content-center login-container">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0"><i class="fas fa-user-graduate me-2"></i>Student Login</h4>
+<div class="login-wrapper">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-header-icon"><i class="fas fa-user-graduate"></i></div>
+                <h2>Student Login</h2>
+                <p>Sign in with your token or email</p>
             </div>
-            <div class="card-body">
-                <form method="POST" action="{{ url_for('main_bp.student_login') }}">
-                    <div class="mb-3">
-                        <label for="token" class="form-label">Student Token</label>
-                        <input type="text" class="form-control" id="token" name="token" placeholder="Enter your unique token" required>
-                        <div class="form-text">Enter the unique token provided by your administrator.</div>
-                    </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-sign-in-alt me-2"></i>Login
-                        </button>
-                    </div>
-                </form>
-                <div class="mt-4 text-center">
-                    <p class="mb-2">Don't have a token? Contact your administrator.</p>
-                    <p class="mb-0">Are you an admin? <a href="{{ url_for('main_bp.login') }}" class="text-primary">Login here</a></p>
+            <div class="login-body">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} py-2 px-3" style="font-size:0.85rem; border-radius:10px;">
+                    <i
+                        class="fas fa-{% if category == 'danger' %}exclamation-circle{% elif category == 'success' %}check-circle{% else %}info-circle{% endif %} me-1"></i>
+                    {{ message }}
                 </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+
+                <!-- Tab Toggle -->
+                <div class="tab-group">
+                    <button class="tab-btn active" onclick="switchTab('token', this)"><i
+                            class="fas fa-key me-1"></i>Token</button>
+                    <button class="tab-btn" onclick="switchTab('email', this)"><i
+                            class="fas fa-envelope me-1"></i>Email</button>
+                </div>
+
+                <!-- Token Form -->
+                <form method="POST" action="{{ url_for('main_bp.student_login') }}" id="tokenForm"
+                    class="tab-panel active">
+                    <div class="form-floating-modern">
+                        <i class="fas fa-key input-icon"></i>
+                        <input type="text" name="token" placeholder="Enter your student token" autocomplete="off"
+                            autofocus>
+                    </div>
+                    <button type="submit" class="login-btn-primary"><i class="fas fa-sign-in-alt"></i>Login with
+                        Token</button>
+                </form>
+
+                <!-- Email Form -->
+                <form method="POST" action="{{ url_for('main_bp.student_login') }}" id="emailForm" class="tab-panel">
+                    <div class="form-floating-modern">
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input type="email" name="email" placeholder="Email address" autocomplete="email">
+                    </div>
+                    <div class="form-floating-modern">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" name="password" placeholder="Password" autocomplete="current-password">
+                    </div>
+                    <button type="submit" class="login-btn-primary"><i class="fas fa-sign-in-alt"></i>Login with
+                        Email</button>
+                </form>
+            </div>
+            <div class="login-footer">
+                <a href="{{ url_for('main_bp.login') }}" style="color:#8b5cf6; font-size:0.9rem; text-decoration:none;">
+                    <i class="fas fa-arrow-left me-1"></i>Staff login (Manager, Faculty, Teacher, Batch Rep)
+                </a>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function switchTab(tab, btn) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(tab === 'token' ? 'tokenForm' : 'emailForm').classList.add('active');
+    }
+</script>
 {% endblock %}

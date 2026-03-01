@@ -103,99 +103,146 @@
                     <i class="fas fa-moon" id="themeIcon"></i>
                 </button>
 
-                <!-- User Menu -->
-                {% if session.get('is_admin') %}
+                <!-- User Menu — Role-Aware -->
+                {% if session.get('user_role') == 'super_admin' %}
                 <div class="user-menu-wrapper">
                     <button class="user-menu-btn admin-btn" id="userMenuBtn">
-                        <div class="user-avatar admin-avatar">
-                            <i class="fas fa-user-shield"></i>
+                        <div class="user-avatar admin-avatar" style="background:rgba(139,92,246,0.15);color:#8b5cf6;">
+                            <i class="fas fa-crown"></i>
                         </div>
-                        <span class="user-name">Admin</span>
+                        <span class="user-name">{{ session.get('user_name', 'Manager') }}</span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="user-dropdown" id="userDropdown">
                         <div class="dropdown-header">
-                            <i class="fas fa-user-shield me-2"></i>
-                            <span>Admin Panel</span>
+                            <i class="fas fa-crown me-2" style="color:#8b5cf6;"></i>
+                            <span>University Manager</span>
                         </div>
-                        <a href="{{ url_for('admin_bp.dashboard') }}" class="dropdown-link">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <span>Dashboard</span>
-                        </a>
-                        <a href="{{ url_for('admin_bp.students') }}" class="dropdown-link">
-                            <i class="fas fa-users"></i>
-                            <span>Students</span>
-                        </a>
-                        <a href="{{ url_for('admin_bp.subjects') }}" class="dropdown-link">
-                            <i class="fas fa-book"></i>
-                            <span>Subjects</span>
-                        </a>
-                        <a href="{{ url_for('admin_bp.lectures') }}" class="dropdown-link">
-                            <i class="fas fa-chalkboard-teacher"></i>
-                            <span>Lectures</span>
-                        </a>
-                        <a href="{{ url_for('admin_bp.assignments') }}" class="dropdown-link">
-                            <i class="fas fa-tasks"></i>
-                            <span>Assignments</span>
-                        </a>
-                        <a href="{{ url_for('admin_bp.news') }}" class="dropdown-link">
-                            <i class="fas fa-newspaper"></i>
-                            <span>News</span>
-                        </a>
-                        <a href="{{ url_for('admin_bp.settings') }}" class="dropdown-link">
-                            <i class="fas fa-cog"></i>
-                            <span>Settings</span>
-                        </a>
+                        <a href="{{ url_for('superadmin_bp.dashboard') }}" class="dropdown-link"><i
+                                class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+                        <a href="{{ url_for('superadmin_bp.faculties') }}" class="dropdown-link"><i
+                                class="fas fa-building-columns"></i><span>Faculties</span></a>
+                        <a href="{{ url_for('superadmin_bp.departments') }}" class="dropdown-link"><i
+                                class="fas fa-sitemap"></i><span>Departments</span></a>
+                        <a href="{{ url_for('superadmin_bp.batches') }}" class="dropdown-link"><i
+                                class="fas fa-users-rectangle"></i><span>Batches</span></a>
+                        <a href="{{ url_for('superadmin_bp.users') }}" class="dropdown-link"><i
+                                class="fas fa-users-cog"></i><span>Users</span></a>
+                        <a href="{{ url_for('superadmin_bp.settings') }}" class="dropdown-link"><i
+                                class="fas fa-cog"></i><span>Settings</span></a>
                         <div class="dropdown-divider"></div>
-                        <a href="{{ url_for('main_bp.logout') }}" class="dropdown-link logout-link">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Logout</span>
-                        </a>
+                        <a href="{{ url_for('main_bp.logout') }}" class="dropdown-link logout-link"><i
+                                class="fas fa-sign-out-alt"></i><span>Logout</span></a>
                     </div>
                 </div>
-                {% elif session.get('student_token') %}
+                {% elif session.get('user_role') == 'faculty_head' %}
                 <div class="user-menu-wrapper">
-                    <button class="user-menu-btn student-btn" id="userMenuBtn">
-                        <div class="user-avatar student-avatar">
-                            <i class="fas fa-user-graduate"></i>
+                    <button class="user-menu-btn admin-btn" id="userMenuBtn">
+                        <div class="user-avatar admin-avatar" style="background:rgba(59,130,246,0.15);color:#3b82f6;">
+                            <i class="fas fa-user-tie"></i>
                         </div>
-                        <span class="user-name">Student</span>
+                        <span class="user-name">{{ session.get('user_name', 'Faculty') }}</span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="user-dropdown" id="userDropdown">
                         <div class="dropdown-header">
-                            <i class="fas fa-user-graduate me-2"></i>
+                            <i class="fas fa-user-tie me-2" style="color:#3b82f6;"></i>
+                            <span>Faculty Head</span>
+                        </div>
+                        <a href="{{ url_for('faculty_bp.dashboard') }}" class="dropdown-link"><i
+                                class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+                        <a href="{{ url_for('faculty_bp.departments') }}" class="dropdown-link"><i
+                                class="fas fa-sitemap"></i><span>Departments</span></a>
+                        <a href="{{ url_for('faculty_bp.batches') }}" class="dropdown-link"><i
+                                class="fas fa-users-rectangle"></i><span>Batches</span></a>
+                        <a href="{{ url_for('faculty_bp.teachers') }}" class="dropdown-link"><i
+                                class="fas fa-chalkboard-teacher"></i><span>Teachers</span></a>
+                        <div class="dropdown-divider"></div>
+                        <a href="{{ url_for('main_bp.logout') }}" class="dropdown-link logout-link"><i
+                                class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+                    </div>
+                </div>
+                {% elif session.get('user_role') == 'teacher' %}
+                <div class="user-menu-wrapper">
+                    <button class="user-menu-btn admin-btn" id="userMenuBtn">
+                        <div class="user-avatar admin-avatar" style="background:rgba(16,185,129,0.15);color:#10b981;">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                        </div>
+                        <span class="user-name">{{ session.get('user_name', 'Teacher') }}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="dropdown-header">
+                            <i class="fas fa-chalkboard-teacher me-2" style="color:#10b981;"></i>
+                            <span>Teacher Portal</span>
+                        </div>
+                        <a href="{{ url_for('teacher_bp.dashboard') }}" class="dropdown-link"><i
+                                class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+                        <div class="dropdown-divider"></div>
+                        <a href="{{ url_for('main_bp.logout') }}" class="dropdown-link logout-link"><i
+                                class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+                    </div>
+                </div>
+                {% elif session.get('user_role') == 'batch_rep' or session.get('is_admin') %}
+                <div class="user-menu-wrapper">
+                    <button class="user-menu-btn admin-btn" id="userMenuBtn">
+                        <div class="user-avatar admin-avatar" style="background:rgba(245,158,11,0.15);color:#f59e0b;">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <span class="user-name">{{ session.get('user_name', 'Batch Rep') }}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="dropdown-header">
+                            <i class="fas fa-user-shield me-2" style="color:#f59e0b;"></i>
+                            <span>Batch Admin</span>
+                        </div>
+                        <a href="{{ url_for('admin_bp.dashboard') }}" class="dropdown-link"><i
+                                class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+                        <a href="{{ url_for('admin_bp.students') }}" class="dropdown-link"><i
+                                class="fas fa-users"></i><span>Students</span></a>
+                        <a href="{{ url_for('admin_bp.lectures') }}" class="dropdown-link"><i
+                                class="fas fa-chalkboard-teacher"></i><span>Lectures</span></a>
+                        <a href="{{ url_for('admin_bp.assignments') }}" class="dropdown-link"><i
+                                class="fas fa-tasks"></i><span>Assignments</span></a>
+                        <a href="{{ url_for('admin_bp.news') }}" class="dropdown-link"><i
+                                class="fas fa-newspaper"></i><span>News</span></a>
+                        <div class="dropdown-divider"></div>
+                        <a href="{{ url_for('main_bp.logout') }}" class="dropdown-link logout-link"><i
+                                class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+                    </div>
+                </div>
+                {% elif session.get('user_role') == 'student' or session.get('student_token') %}
+                <div class="user-menu-wrapper">
+                    <button class="user-menu-btn student-btn" id="userMenuBtn">
+                        <div class="user-avatar student-avatar" style="background:rgba(6,182,212,0.15);color:#06b6d4;">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <span class="user-name">{{ session.get('user_name', 'Student') }}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="dropdown-header">
+                            <i class="fas fa-user-graduate me-2" style="color:#06b6d4;"></i>
                             <span>Student Portal</span>
                         </div>
-                        <a href="{{ url_for('student_bp.dashboard') }}" class="dropdown-link">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <span>Dashboard</span>
-                        </a>
-                        <a href="{{ url_for('student_bp.tasks') }}" class="dropdown-link">
-                            <i class="fas fa-tasks"></i>
-                            <span>My Tasks</span>
-                        </a>
-                        <a href="{{ url_for('student_bp.grades') }}" class="dropdown-link">
-                            <i class="fas fa-chart-line"></i>
-                            <span>My Grades</span>
-                        </a>
-                        <a href="{{ url_for('student_bp.attendance') }}" class="dropdown-link">
-                            <i class="fas fa-calendar-check"></i>
-                            <span>Attendance</span>
-                        </a>
-                        <a href="{{ url_for('student_bp.feedback') }}" class="dropdown-link">
-                            <i class="fas fa-comment-dots"></i>
-                            <span>Feedback</span>
-                        </a>
+                        <a href="{{ url_for('student_bp.dashboard') }}" class="dropdown-link"><i
+                                class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+                        <a href="{{ url_for('student_bp.tasks') }}" class="dropdown-link"><i
+                                class="fas fa-tasks"></i><span>My Tasks</span></a>
+                        <a href="{{ url_for('student_bp.grades') }}" class="dropdown-link"><i
+                                class="fas fa-chart-line"></i><span>My Grades</span></a>
+                        <a href="{{ url_for('student_bp.attendance') }}" class="dropdown-link"><i
+                                class="fas fa-calendar-check"></i><span>Attendance</span></a>
+                        <a href="{{ url_for('student_bp.feedback') }}" class="dropdown-link"><i
+                                class="fas fa-comment-dots"></i><span>Feedback</span></a>
                         <div class="dropdown-divider"></div>
-                        <a href="{{ url_for('main_bp.logout') }}" class="dropdown-link logout-link">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Logout</span>
-                        </a>
+                        <a href="{{ url_for('main_bp.logout') }}" class="dropdown-link logout-link"><i
+                                class="fas fa-sign-out-alt"></i><span>Logout</span></a>
                     </div>
                 </div>
                 {% else %}
-                <a href="{{ url_for('main_bp.student_login') }}" class="action-btn login-btn">
+                <a href="{{ url_for('main_bp.login') }}" class="action-btn login-btn">
                     <i class="fas fa-sign-in-alt me-2"></i>
                     <span>Login</span>
                 </a>

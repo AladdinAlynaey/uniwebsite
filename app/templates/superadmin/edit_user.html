@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Edit User{% endblock %}
+{% block content %}
+<div class="container my-4">
+    <h2><i class="fas fa-user-edit me-2 text-primary"></i>Edit User: {{ target_user.name }}</h2>
+    <form method="POST" class="mt-4" style="max-width:700px">
+        <div class="row g-3">
+            <div class="col-md-6"><label class="form-label">Name</label><input type="text" class="form-control"
+                    name="name" value="{{ target_user.name }}" required></div>
+            <div class="col-md-6"><label class="form-label">Email</label><input type="email" class="form-control"
+                    name="email" value="{{ target_user.email }}" required></div>
+            <div class="col-md-6"><label class="form-label">New Password <small class="text-muted">(leave blank to
+                        keep)</small></label><input type="password" class="form-control" name="password"></div>
+            <div class="col-md-6">
+                <label class="form-label">Role</label>
+                <select class="form-select" name="role" required>
+                    {% for r in roles %}<option value="{{ r }}" {{ 'selected' if target_user.role==r }}>{{
+                        r|replace('_',' ')|title }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Faculty</label>
+                <select class="form-select" name="faculty_id">
+                    <option value="">— None —</option>{% for f in faculties %}<option value="{{ f.id }}" {{ 'selected'
+                        if target_user.get('faculty_id')==f.id }}>{{ f.name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Department</label>
+                <select class="form-select" name="department_id">
+                    <option value="">— None —</option>{% for d in departments %}<option value="{{ d.id }}" {{ 'selected'
+                        if target_user.get('department_id')==d.id }}>{{ d.name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Batch</label>
+                <select class="form-select" name="batch_id">
+                    <option value="">— None —</option>{% for b in batches %}<option value="{{ b.id }}" {{ 'selected' if
+                        target_user.get('batch_id')==b.id }}>{{ b.name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Status</label>
+                <select class="form-select" name="is_active">
+                    <option value="true" {{ 'selected' if target_user.get('is_active', True) }}>Active</option>
+                    <option value="false" {{ 'selected' if not target_user.get('is_active', True) }}>Inactive</option>
+                </select>
+            </div>
+        </div>
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="{{ url_for('superadmin_bp.users') }}" class="btn btn-secondary ms-2">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

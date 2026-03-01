@@ -62,6 +62,126 @@ class BaseModel:
             return []
     
     @classmethod
+    def load_by_batch(cls, batch_id):
+        """Load all records scoped to a specific batch.
+        
+        Args:
+            batch_id: Batch ID to filter by
+            
+        Returns:
+            list: Filtered records
+        """
+        if not batch_id:
+            return []
+        try:
+            es = get_es_client()
+            index = cls._get_index()
+            
+            if not es.indices.exists(index=index):
+                return []
+            
+            result = es.search(
+                index=index,
+                body={
+                    "query": {"term": {"batch_id.keyword": batch_id}},
+                    "size": 10000
+                },
+                request_timeout=30
+            )
+            
+            records = []
+            for hit in result['hits']['hits']:
+                record = hit['_source']
+                if 'id' not in record:
+                    record['id'] = hit['_id']
+                records.append(record)
+            return records
+            
+        except Exception as e:
+            print(f"Error loading {cls.__name__} by batch: {e}")
+            return []
+    
+    @classmethod
+    def load_by_faculty(cls, faculty_id):
+        """Load all records scoped to a specific faculty.
+        
+        Args:
+            faculty_id: Faculty ID to filter by
+            
+        Returns:
+            list: Filtered records
+        """
+        if not faculty_id:
+            return []
+        try:
+            es = get_es_client()
+            index = cls._get_index()
+            
+            if not es.indices.exists(index=index):
+                return []
+            
+            result = es.search(
+                index=index,
+                body={
+                    "query": {"term": {"faculty_id.keyword": faculty_id}},
+                    "size": 10000
+                },
+                request_timeout=30
+            )
+            
+            records = []
+            for hit in result['hits']['hits']:
+                record = hit['_source']
+                if 'id' not in record:
+                    record['id'] = hit['_id']
+                records.append(record)
+            return records
+            
+        except Exception as e:
+            print(f"Error loading {cls.__name__} by faculty: {e}")
+            return []
+    
+    @classmethod
+    def load_by_department(cls, department_id):
+        """Load all records scoped to a specific department.
+        
+        Args:
+            department_id: Department ID to filter by
+            
+        Returns:
+            list: Filtered records
+        """
+        if not department_id:
+            return []
+        try:
+            es = get_es_client()
+            index = cls._get_index()
+            
+            if not es.indices.exists(index=index):
+                return []
+            
+            result = es.search(
+                index=index,
+                body={
+                    "query": {"term": {"department_id.keyword": department_id}},
+                    "size": 10000
+                },
+                request_timeout=30
+            )
+            
+            records = []
+            for hit in result['hits']['hits']:
+                record = hit['_source']
+                if 'id' not in record:
+                    record['id'] = hit['_id']
+                records.append(record)
+            return records
+            
+        except Exception as e:
+            print(f"Error loading {cls.__name__} by department: {e}")
+            return []
+    
+    @classmethod
     def save_all(cls, data):
         """Save all records to Elasticsearch (full replace).
         

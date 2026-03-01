@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Edit Faculty{% endblock %}
+{% block content %}
+<div class="container my-4">
+    <h2><i class="fas fa-edit me-2 text-primary"></i>Edit Faculty: {{ faculty.name }}</h2>
+    <form method="POST" class="mt-4" style="max-width:600px">
+        <div class="mb-3"><label class="form-label">Name</label><input type="text" class="form-control" name="name"
+                value="{{ faculty.name }}" required></div>
+        <div class="mb-3"><label class="form-label">Code</label><input type="text" class="form-control" name="code"
+                value="{{ faculty.get('code', '') }}" required></div>
+        <div class="mb-3"><label class="form-label">Description</label><textarea class="form-control" name="description"
+                rows="3">{{ faculty.get('description', '') }}</textarea></div>
+        <div class="mb-3">
+            <label class="form-label">Faculty Head</label>
+            <select class="form-select" name="head_user_id">
+                <option value="">— None —</option>
+                {% for fh in faculty_heads %}<option value="{{ fh.id }}" {{ 'selected' if
+                    faculty.get('head_user_id')==fh.id }}>{{ fh.name }}</option>{% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a href="{{ url_for('superadmin_bp.faculties') }}" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,144 +1,87 @@
-<p align="center">
-  <img src="app/static/img/favicon.png" alt="UniWebsite Logo" width="120" height="120">
-</p>
+<div align="center">
 
-<h1 align="center">🎓 University AI Batch — Educational Platform</h1>
+# 🎓 University AI Platform
 
-<p align="center">
-  <strong>A production-grade, AI-powered university management platform</strong><br>
-  Built with Flask · Elasticsearch Data Layer · Multi-Provider AI (Gemini, OpenRouter, Groq) · Telegram Bot
-</p>
+### Multi-Tenant University Management System with AI-Powered Learning
 
-<p align="center">
-  <a href="#features"><img src="https://img.shields.io/badge/Features-30%2B-blue?style=for-the-badge" alt="Features"></a>
-  <a href="#ai-integration"><img src="https://img.shields.io/badge/AI-Multi--Provider-purple?style=for-the-badge" alt="AI"></a>
-  <a href="#tech-stack"><img src="https://img.shields.io/badge/Flask-3.x-green?style=for-the-badge&logo=flask" alt="Flask"></a>
-  <a href="#elasticsearch"><img src="https://img.shields.io/badge/Elasticsearch-8.x-yellow?style=for-the-badge&logo=elasticsearch" alt="Elasticsearch"></a>
-  <a href="#deployment"><img src="https://img.shields.io/badge/Production-Gunicorn%20%2B%20PM2-orange?style=for-the-badge" alt="Production"></a>
-  <a href="#telegram"><img src="https://img.shields.io/badge/Telegram-Bot%20Integration-blue?style=for-the-badge&logo=telegram" alt="Telegram"></a>
-</p>
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![Flask](https://img.shields.io/badge/Flask-3.0+-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com)
+[![Elasticsearch](https://img.shields.io/badge/Elasticsearch-8.x-005571?style=for-the-badge&logo=elasticsearch&logoColor=white)](https://elastic.co)
+[![License](https://img.shields.io/badge/License-Proprietary-red?style=for-the-badge)](LICENSE)
 
----
+<br/>
 
-## 🌟 Overview
+*A production-grade, multi-tenant university management platform with 5-role hierarchy, AI chatbot, Telegram integration, and premium responsive UI.*
 
-**University AI Batch** is a comprehensive educational platform designed for universities and academic institutions. It provides a complete ecosystem for managing lectures, assignments, grades, attendance, news, and student interactions — all enhanced with cutting-edge AI capabilities.
+**Built by [AI Eng. Alaadin](https://alaadin-alynaey.site)**
 
-The platform serves **three core user roles**:
-- **🛡️ Administrators** — Full control over the academic environment
-- **🎓 Students** — Personalized learning dashboard and AI assistance
-- **🌐 Public Visitors** — Access to news, subjects, and the AI chatbot
-
-> **Production-Ready**: Deployed with Gunicorn (gevent async workers) + PM2, capable of handling **3,000+ concurrent connections** and **thousands of daily users**.
-
----
-
-## ✨ Features
-
-### 🛡️ Admin Dashboard
-| Feature | Description |
-|---------|-------------|
-| **Dashboard Overview** | Real-time stats: students, subjects, lectures, recent activity |
-| **Lecture Management** | Upload weekly lectures with file attachments, organized by week and type (Practical/Theoretical/Both) |
-| **Subject Management** | Create, edit, delete subjects organized by semester |
-| **Assignment System** | Create assignments with deadlines, file uploads, and a 0-10 grading scale |
-| **Submission Review** | View, download, and grade student assignment submissions |
-| **News Management** | Publish news with automatic Telegram bot notifications |
-| **Attendance Tracking** | Interactive tables for marking and viewing attendance per lecture |
-| **Grade Management** | Enter and manage grades for all students across subjects |
-| **Feedback Management** | View, reply to, and update status of student feedback |
-| **Student Management** | Add, edit, delete students; generate unique access tokens |
-| **AI Settings** | Switch between AI providers (Gemini, OpenRouter, Groq) with live testing |
-
-### 🎓 Student Portal
-| Feature | Description |
-|---------|-------------|
-| **Personal Dashboard** | At-a-glance view of grades, attendance, upcoming tasks |
-| **Profile Page** | View personal information and student details |
-| **Lecture Browser** | Browse and download lectures organized by subject |
-| **Task Manager** | Weekly homework, final projects, and presentations with status tracking (Not Started → In Progress → Done) |
-| **Assignment Upload** | Submit assignments with file attachments before deadlines |
-| **Grade Viewer** | View grades for all subjects |
-| **Attendance History** | Track personal attendance records |
-| **Feedback System** | Submit suggestions, inquiries, complaints; view admin replies |
-| **AI Chatbot** | Personalized AI assistant with knowledge of your courses and data |
-
-### 🤖 AI Integration
-| Feature | Description |
-|---------|-------------|
-| **Multi-Provider Support** | Seamlessly switch between Gemini, OpenRouter, and Groq |
-| **RAG (Retrieval Augmented Generation)** | AI answers enriched with real-time data from lectures, subjects, news, and student records |
-| **API Key Rotation** | Up to 10 Gemini API keys with automatic rotation on quota limits |
-| **Fallback System** | If one provider fails, automatically tries alternatives |
-| **Conversation Memory** | Chat history maintained across sessions |
-| **Provider Testing** | Admin can test each provider's API before switching |
-| **10+ Free Models** | OpenRouter integration includes Llama 3.3, Qwen 2.5, Mistral, and more |
-
-### 📱 Telegram Bot
-| Feature | Description |
-|---------|-------------|
-| **Webhook Integration** | Real-time notifications via Telegram |
-| **Auto-Notifications** | New lectures and news automatically sent to subscribed students |
-| **Student Data API** | Full student data accessible via API for Telegram/n8n workflows |
-| **Bot Commands** | Interactive commands for student information retrieval |
-
-### 🎨 UI/UX
-| Feature | Description |
-|---------|-------------|
-| **Dark/Light Themes** | Toggle between themes with persistent preference |
-| **Mobile-First Design** | Fully responsive with dedicated mobile navigation |
-| **Modern Typography** | Inter and Space Grotesk from Google Fonts |
-| **Micro-Animations** | Counter animations, scroll effects, loading states |
-| **Bootstrap 5** | Professional UI components and grid system |
-| **Font Awesome Icons** | Comprehensive iconography throughout |
+</div>
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-uniwebsite/
-├── app/
-│   ├── __init__.py          # Flask app factory with CORS, Markdown, filters
-│   ├── routes/
-│   │   ├── main.py          # Public routes: home, news, subjects, chatbot, auth
-│   │   ├── admin.py         # Admin panel: CRUD for all entities (37 routes)
-│   │   ├── student.py       # Student portal: dashboard, tasks, submissions (18 routes)
-│   │   └── api.py           # REST API: Telegram webhook, chatbot, data endpoints
-│   ├── models/
-│   │   ├── base_model.py    # Elasticsearch-backed persistence layer
-│   │   ├── lecture.py       # Lecture & LectureMaterial models
-│   │   ├── student.py       # Student model with token authentication
-│   │   ├── subject.py       # Subject model (organized by semester)
-│   │   ├── attendance.py    # Attendance tracking model
-│   │   ├── grade.py         # Grade management model
-│   │   ├── feedback.py      # Student feedback model
-│   │   ├── news.py          # News articles model
-│   │   └── telegram_user.py # Telegram user<->student mapping
-│   ├── utils/
-│   │   ├── elasticsearch_client.py  # ES connection, index management, data migration
-│   │   ├── gemini_ai.py     # Multi-provider AI engine (Gemini/OpenRouter/Groq + RAG)
-│   │   ├── auth.py          # Authentication decorators & password verification
-│   │   ├── assignments.py   # Assignment management (ES-backed)
-│   │   ├── file_upload.py   # Secure file upload handling
-│   │   ├── n8n_webhook.py   # n8n automation integration
-│   │   └── telegram_bot.py  # Telegram bot logic & notifications
-│   ├── templates/           # 28 Jinja2 HTML templates
-│   │   ├── base.html        # Master layout with navbar, footer, theme toggle
-│   │   ├── admin/           # 18 admin templates
-│   │   └── student/         # 10 student templates
-│   └── static/
-│       ├── css/             # Custom stylesheets (desktop + mobile)
-│       ├── js/              # Client-side JavaScript
-│       ├── img/             # Images and favicon
-│       └── uploads/         # User-uploaded files (lectures, assignments)
-├── run.py                   # Application entry point
-├── gunicorn.conf.py         # Production server config (gevent async workers)
-├── ecosystem.config.js      # PM2 process manager config
-├── requirements.txt         # Python dependencies
-├── .env                     # Environment variables (API keys, config)
-└── .gitignore               # Git ignore rules
+University (Super Admin)
+  └── Faculty (Faculty Head)
+       └── Department
+            └── Batch (Batch Representative)
+                 ├── Teacher (per Subject)
+                 └── Student
 ```
+
+**5 Distinct Roles** — each with scoped data access, dedicated dashboard, and role-specific features.
+
+| Role | Access Level | Dashboard |
+|------|-------------|-----------|
+| 🟣 **University Manager** | Full system control | `/superadmin/dashboard` |
+| 🔵 **Faculty Head** | Faculty-scoped management | `/faculty/dashboard` |
+| 🟢 **Teacher** | Subject-scoped teaching tools | `/teacher/dashboard` |
+| 🟡 **Batch Representative** | Batch administration | `/admin/dashboard` |
+| 🔵 **Student** | Personal academic portal | `/student/dashboard` |
+
+---
+
+## ✨ Key Features
+
+### 🏛️ Multi-Tenant Hierarchy
+- **University → Faculty → Department → Batch** organizational structure
+- Role-based data scoping — users only see data within their scope
+- Hierarchical user management with cascading permissions
+
+### 🤖 AI-Powered Learning
+- **Gemini API** integration with intelligent chatbot
+- Multi-provider fallback system (Gemini → OpenRouter → Groq)
+- Retrieval-Augmented Generation (RAG) using university knowledge base
+- Context-aware responses with student-specific data
+
+### 📱 Telegram Bot Integration
+- Real-time notifications for lectures, grades, and announcements
+- Student verification and linking via Telegram
+- Webhook-based architecture for instant delivery
+
+### 📊 Academic Management
+- **Attendance tracking** with presence rate analytics
+- **Grade management** with component breakdown (homework, midterm, final)
+- **Lecture management** with file uploads and material organization
+- **Assignment system** with submission tracking and grading
+- **Feedback system** with admin replies and status tracking
+
+### 🔒 Security
+- **Bcrypt password hashing** (Werkzeug security)
+- **Session-based authentication** with role validation
+- **CSRF protection** via Flask sessions
+- **Input sanitization** on all form inputs
+- **Scoped data access** — enforced at every route level
+- **Rate limiting** ready architecture
+- **Environment variable** based secret management
+
+### 🎨 Premium UI
+- **Dark/Light theme** toggle with persistence
+- **Responsive design** — works on all devices
+- **Modern glassmorphism** effects and gradient accents
+- **Animated counters** and micro-interactions
+- **Role-colored navigation** — unique identity per role
 
 ---
 
@@ -146,14 +89,70 @@ uniwebsite/
 
 | Layer | Technology |
 |-------|-----------|
-| **Backend** | Python 3.12, Flask 3.x, Flask-CORS, Flask-Markdown |
-| **Frontend** | HTML5, CSS3, JavaScript (Vanilla), Bootstrap 5.3 |
-| **AI Engine** | Google Gemini 2.0 Flash, OpenRouter (10+ models), Groq |
-| **Data Storage** | Elasticsearch 8.x (migrated from JSON, scalable & durable) |
-| **Deployment** | Gunicorn (gevent workers) + PM2 process manager |
-| **Messaging** | Telegram Bot API, n8n webhooks |
-| **Typography** | Google Fonts (Inter, Space Grotesk) |
-| **Icons** | Font Awesome 6.0 |
+| **Backend** | Python 3.10+, Flask 3.0 |
+| **Database** | Elasticsearch 8.x |
+| **AI** | Google Gemini API, OpenRouter, Groq |
+| **Frontend** | Bootstrap 5, Font Awesome 6, Custom CSS |
+| **Fonts** | Inter, Space Grotesk (Google Fonts) |
+| **Bot** | Telegram Bot API (Webhook mode) |
+| **Auth** | Werkzeug Security, Flask Sessions |
+| **Server** | Gunicorn + PM2 (production) |
+
+---
+
+## 📁 Project Structure
+
+```
+uniwebsite/
+├── app/
+│   ├── __init__.py              # App factory, blueprint registration
+│   ├── models/
+│   │   ├── base_model.py        # Elasticsearch CRUD base class
+│   │   ├── user.py              # Unified user model (5 roles)
+│   │   ├── faculty.py           # Faculty model
+│   │   ├── department.py        # Department model
+│   │   ├── batch.py             # Batch model
+│   │   ├── teacher_subject.py   # Teacher-Subject linking
+│   │   ├── student.py           # Legacy student model
+│   │   ├── subject.py           # Subject model
+│   │   ├── lecture.py           # Lecture & materials
+│   │   ├── attendance.py        # Attendance records
+│   │   ├── grade.py             # Grade management
+│   │   ├── feedback.py          # Student feedback
+│   │   ├── news.py              # University news
+│   │   └── telegram_user.py     # Telegram linking
+│   ├── routes/
+│   │   ├── main.py              # Public pages, unified login
+│   │   ├── superadmin.py        # University Manager routes
+│   │   ├── faculty_head.py      # Faculty Head routes
+│   │   ├── teacher.py           # Teacher routes
+│   │   ├── admin.py             # Batch Rep routes (legacy)
+│   │   ├── student.py           # Student routes
+│   │   └── api.py               # REST API & Telegram webhook
+│   ├── templates/
+│   │   ├── base.html            # Role-aware navigation
+│   │   ├── index.html           # Landing page with 5-role portal
+│   │   ├── login.html           # Unified staff login
+│   │   ├── student_login.html   # Student login (token + email)
+│   │   ├── superadmin/          # 10 Super Admin templates
+│   │   ├── faculty/             # 4 Faculty Head templates
+│   │   ├── teacher/             # 6 Teacher templates
+│   │   ├── admin/               # Batch Rep templates
+│   │   └── student/             # Student templates
+│   ├── static/
+│   │   ├── css/                 # Stylesheets
+│   │   ├── js/                  # JavaScript
+│   │   └── img/                 # Assets
+│   └── utils/
+│       ├── auth.py              # Role decorators & session management
+│       ├── elasticsearch_client.py  # ES connection & data migration
+│       └── gemini_ai.py         # AI provider management
+├── data/                        # JSON data (legacy, gitignored)
+├── .env                         # API keys & secrets (gitignored)
+├── requirements.txt             # Python dependencies
+├── run.py                       # Application entry point
+└── README.md                    # This file
+```
 
 ---
 
@@ -161,13 +160,13 @@ uniwebsite/
 
 ### Prerequisites
 - Python 3.10+
-- Elasticsearch 8.x (running on `localhost:9200`)
-- Node.js (for PM2)
-- Git
+- Elasticsearch 8.x running on `localhost:9200`
+- Gemini API key (or OpenRouter/Groq key)
 
-### 1. Clone & Setup
+### Installation
 
 ```bash
+# Clone the repository
 git clone https://github.com/AladdinAlynaey/uniwebsite.git
 cd uniwebsite
 
@@ -177,163 +176,87 @@ source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
-pip install gunicorn gevent
 ```
 
-### 2. Configure Environment
+### Configuration
 
-```bash
-cp .env.example .env
+Create a `.env` file in the project root:
+
+```env
+SECRET_KEY=your-super-secret-key-change-this
+FLASK_ENV=production
+
+# AI API Keys (at least one required)
+GEMINI_API_KEY_1=your-gemini-key
+OPENROUTER_API_KEY=your-openrouter-key
+GROQ_API_KEY=your-groq-key
+
+# Elasticsearch
+ES_HOST=http://localhost:9200
 ```
 
-Edit `.env` and add your API keys:
-
-| Variable | Description |
-|----------|-------------|
-| `GEMINI_API_KEY_1` through `_10` | Google Gemini API keys (get from [Google AI Studio](https://ai.google.dev/)) |
-| `GEMINI_MODEL_NAME` | Model name (default: `gemini-2.0-flash`) |
-| `OPENROUTER_API_KEY` | OpenRouter API key (has free models!) |
-| `GROQ_API_KEY` | Groq API key (fast and free!) |
-| `SECRET_KEY` | Flask secret key for sessions |
-
-### 3. Run (Development)
+### Running
 
 ```bash
+# Development
 python run.py
-```
 
-Access at `http://localhost:5006`
-
-### 4. Run (Production)
-
-```bash
-# Start with Gunicorn directly
-gunicorn --config gunicorn.conf.py run:app
-
-# Or with PM2 for process management
+# Production (with Gunicorn + PM2)
 pm2 start ecosystem.config.js
-pm2 save
 ```
 
----
+The app runs on **http://localhost:5006** by default.
 
-## 🔐 Default Credentials
+### First Login
 
-| Role | Login Method |
-|------|-------------|
-| **Admin** | Password: `alaadin123` (via `/login`) |
-| **Student** | Unique token generated by admin (via `/student/login`) |
+On first startup, the system automatically creates:
+- A default **Faculty** (General Faculty)
+- A default **Department** (General Department)  
+- A default **Batch** (Batch 2024)
+- A **Super Admin** account: `admin@university.edu` / `admin123`
 
----
-
-## 🔍 Elasticsearch
-
-The platform uses **Elasticsearch 8.x** as its primary data store, providing:
-
-| Feature | Details |
-|---------|---------|
-| **Auto-Migration** | On first startup, existing JSON data is automatically indexed into ES |
-| **8 Indices** | `uniwebsite_student`, `uniwebsite_lecture`, `uniwebsite_subject`, `uniwebsite_attendance`, `uniwebsite_grade`, `uniwebsite_feedback`, `uniwebsite_news`, `uniwebsite_assignments` |
-| **Zero-Downtime** | Migration is idempotent — skips already-indexed data |
-| **Scalable** | Handles thousands of documents with millisecond query times |
-| **Durable** | Data persists independently of application restarts |
-
-### ES Configuration
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `ES_HOST` | `http://localhost:9200` | Elasticsearch server URL |
-
-All indices are prefixed with `uniwebsite_` to avoid collisions with other applications sharing the same ES cluster.
+> ⚠️ **Change the default admin password immediately after first login!**
 
 ---
 
-## ⚡ Production Deployment
+## 🔐 Security Features
 
-### Gunicorn Configuration
-
-The included `gunicorn.conf.py` is optimized for high concurrency:
-
-| Setting | Value | Purpose |
-|---------|-------|---------|
-| Worker class | `gevent` (async) | Each worker handles 1000+ concurrent connections |
-| Workers | `3` (matches CPU cores) | 3 × 1000 = **3,000 concurrent connections** |
-| Timeout | `120s` | Accommodates slow AI API calls |
-| Max requests | `2,000` | Auto-recycles workers to prevent memory leaks |
-| Preload | `true` | Shares memory across workers, faster startup |
-
-### PM2 Process Manager
-
-The `ecosystem.config.js` provides:
-- ✅ **Auto-restart** on crashes
-- ✅ **Watch mode** — auto-reload when code changes
-- ✅ **Startup persistence** — survives server reboots (`pm2 save`)
-- ✅ **Log management** with timestamps
-- ✅ **Smart ignore** — doesn't restart on data/upload changes
-
-### Load Test Results
-
-Tested with 200 concurrent users firing 600 requests (Elasticsearch backend):
-
-```
-✅ Successes:     600/600 (100.0%)
-❌ Failures:      0/600 (0.0%)
-
-🏆 VERDICT: EXCELLENT — Ready for production!
-```
+| Feature | Implementation |
+|---------|---------------|
+| Password Hashing | Werkzeug `generate_password_hash` (pbkdf2:sha256) |
+| Session Security | Flask signed sessions with `SECRET_KEY` |
+| Role Enforcement | Decorators: `@super_admin_required`, `@faculty_head_required`, `@teacher_required`, etc. |
+| Data Scoping | Every query filtered by user's `faculty_id`, `department_id`, `batch_id` |
+| Input Validation | Server-side validation on all forms |
+| API Security | Token-based Telegram webhook verification |
+| Environment Variables | All secrets in `.env`, never committed to Git |
+| CORS | Configured via Flask-CORS |
 
 ---
 
-## 🔌 API Endpoints
+## 📡 API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/telegram/webhook` | Telegram bot webhook |
-| `POST` | `/api/chatbot` | AI chatbot (JSON: `query`, `student_token`) |
-| `GET` | `/api/lectures` | Get all lectures (with optional `subject_id` filter) |
-| `GET` | `/api/news` | Get all news articles |
-| `POST` | `/api/test-n8n-webhook` | Test n8n webhook connection |
-| `POST` | `/api/send-test-news-webhook` | Send test news to n8n |
-| `GET` | `/api/student-data?token=<TOKEN>` | Full student data (for Telegram/n8n) |
-
----
-
-## 🤖 AI Setup Guide
-
-### Option 1: Google Gemini (Primary)
-1. Get API keys from [Google AI Studio](https://ai.google.dev/)
-2. Add up to 10 keys in `.env` (`GEMINI_API_KEY_1` through `_10`)
-3. Keys auto-rotate when one hits quota limits
-
-### Option 2: OpenRouter (10+ Free Models)
-1. Get an API key from [OpenRouter](https://openrouter.ai/)
-2. Set `OPENROUTER_API_KEY` in `.env`
-3. Auto-fallback through: Gemini Flash → Llama 3.3 70B → Qwen 2.5 72B → Mistral → and more
-
-### Option 3: Groq (Lightning Fast)
-1. Get an API key from [Groq](https://console.groq.com/)
-2. Set `GROQ_API_KEY` in `.env`
-3. Uses Llama 3.3 70B by default
-
-### Switching Providers
-Use the **Admin → Settings** page to switch between providers and test each one live.
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/webhook` | POST | Telegram bot webhook |
+| `/api/chatbot` | POST | AI chatbot query |
+| `/api/lectures` | GET | Public lecture data |
+| `/api/news` | GET | Public news feed |
+| `/api/student-data` | GET | Student info (authenticated) |
+| `/api/test-webhook` | POST | Webhook testing |
 
 ---
 
-## 📱 Telegram Bot Setup
+## 🎨 Screenshots
 
-1. Create a bot with [@BotFather](https://t.me/BotFather) on Telegram
-2. Set the webhook URL to `https://your-domain/api/telegram/webhook`
-3. The bot will automatically send notifications for:
-   - New lectures uploaded
-   - New news articles published
-   - Student data queries
+### Landing Page & Login Portal
+The landing page features a 5-role login portal, animated stat counters, and modern hero section.
 
----
+### Role-Specific Dashboards
+Each role gets a dedicated dashboard with relevant stats, quick actions, and management tools.
 
-## 📝 License
-
-This project is licensed under the MIT License.
+### Premium Dark/Light Theme
+Toggle between themes with persistent preference. All roles have unique color coding.
 
 ---
 
@@ -341,14 +264,25 @@ This project is licensed under the MIT License.
 
 **AI Eng. Alaadin Al-Ynaey**
 
-- 🌐 [Personal Website](https://alaadin-alynaey.site)
+- 🌐 [Website](https://alaadin-alynaey.site)
 - 💼 [LinkedIn](https://linkedin.com/in/alaadin-al-ynaey-179a88342)
 - 🐙 [GitHub](https://github.com/AladdinAlynaey)
 - 📧 alaadinessam2016@gmail.com
 
 ---
 
-<p align="center">
-  <strong>Built with ❤️ for Education</strong><br>
-  <sub>Empowering universities with AI-driven learning management</sub>
-</p>
+## 📄 License
+
+**This software is proprietary and confidential.** See [LICENSE](LICENSE) for full terms.
+
+All rights reserved. No part of this software may be reproduced, distributed, or transmitted in any form or by any means without the prior written permission of the author.
+
+---
+
+<div align="center">
+
+**Built with ❤️ by AI Eng. Alaadin**
+
+*University AI Platform — Transforming Education Through Technology*
+
+</div>

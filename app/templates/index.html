@@ -2,6 +2,216 @@
 
 {% block title %}Home - University AI Batch{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* ===== ROLE LOGIN PORTAL ===== */
+    .login-portal {
+        padding: 4rem 0;
+        background: var(--bg-secondary);
+        border-top: 1px solid var(--border-color);
+    }
+
+    .portal-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .portal-header h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+    }
+
+    .portal-header p {
+        color: var(--text-secondary);
+        font-size: 1.05rem;
+        max-width: 520px;
+        margin: 0 auto;
+    }
+
+    .role-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.25rem;
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    .role-card {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 1.75rem 1.25rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        color: inherit;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .role-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 16px;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .role-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .role-card:hover::before {
+        opacity: 1;
+    }
+
+    .role-card:hover .role-icon {
+        transform: scale(1.1);
+    }
+
+    .role-card.super-admin::before {
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(168, 85, 247, 0.05));
+    }
+
+    .role-card.super-admin:hover {
+        border-color: #8b5cf6;
+    }
+
+    .role-card.faculty::before {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(96, 165, 250, 0.05));
+    }
+
+    .role-card.faculty:hover {
+        border-color: #3b82f6;
+    }
+
+    .role-card.teacher::before {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(52, 211, 153, 0.05));
+    }
+
+    .role-card.teacher:hover {
+        border-color: #10b981;
+    }
+
+    .role-card.batch-rep::before {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 191, 36, 0.05));
+    }
+
+    .role-card.batch-rep:hover {
+        border-color: #f59e0b;
+    }
+
+    .role-card.student::before {
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(34, 211, 238, 0.05));
+    }
+
+    .role-card.student:hover {
+        border-color: #06b6d4;
+    }
+
+    .role-icon {
+        width: 72px;
+        height: 72px;
+        border-radius: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        margin-bottom: 1rem;
+        transition: transform 0.3s;
+    }
+
+    .role-icon.purple {
+        background: rgba(139, 92, 246, 0.15);
+        color: #8b5cf6;
+    }
+
+    .role-icon.blue {
+        background: rgba(59, 130, 246, 0.15);
+        color: #3b82f6;
+    }
+
+    .role-icon.green {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+    }
+
+    .role-icon.amber {
+        background: rgba(245, 158, 11, 0.15);
+        color: #f59e0b;
+    }
+
+    .role-icon.cyan {
+        background: rgba(6, 182, 212, 0.15);
+        color: #06b6d4;
+    }
+
+    .role-card h4 {
+        font-size: 1.05rem;
+        font-weight: 600;
+        margin-bottom: 0.4rem;
+    }
+
+    .role-card p {
+        font-size: 0.82rem;
+        color: var(--text-secondary);
+        margin-bottom: 0;
+        line-height: 1.4;
+    }
+
+    .role-arrow {
+        margin-top: 0.75rem;
+        font-size: 0.85rem;
+        opacity: 0;
+        transform: translateX(-8px);
+        transition: all 0.3s;
+    }
+
+    .role-card:hover .role-arrow {
+        opacity: 0.7;
+        transform: translateX(0);
+    }
+
+    @media (max-width: 768px) {
+        .role-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .role-card {
+            padding: 1.25rem 0.75rem;
+        }
+
+        .role-icon {
+            width: 56px;
+            height: 56px;
+            font-size: 1.3rem;
+            border-radius: 14px;
+        }
+
+        .role-card h4 {
+            font-size: 0.95rem;
+        }
+
+        .role-card p {
+            font-size: 0.75rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .role-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Hero Section -->
 <section class="hero-section">
@@ -11,50 +221,38 @@
             <div class="col-lg-10 col-xl-9 text-center">
                 <div class="hero-badge mb-4">
                     <i class="fas fa-graduation-cap me-2"></i>
-                    <span>Welcome to University AI Batch</span>
+                    <span>University AI Multi-Tenant Platform</span>
                 </div>
                 <h1 class="hero-title mb-4">
                     Transform Your <span class="gradient-text">Educational</span> Experience
                 </h1>
                 <p class="hero-description mb-5">
-                    A complete educational platform with role-based access control, Telegram bot integration, 
-                    and an intelligent AI chatbot. Built by <strong>AI Eng. Alaadin</strong> to revolutionize learning.
+                    A complete multi-tenant university platform with 5-role hierarchy,
+                    AI-powered chatbot, and Telegram integration. Built by <strong>AI Eng. Alaadin</strong>.
                 </p>
                 <div class="hero-buttons d-flex flex-wrap gap-3 justify-content-center mb-4">
-                    {% if session.get('student_token') %}
-                        <a href="{{ url_for('student_bp.dashboard') }}" class="btn btn-hero-primary btn-lg">
-                            <i class="fas fa-tachometer-alt me-2"></i>
-                            <span>Go to Dashboard</span>
-                        </a>
-                    {% elif session.get('is_admin') %}
-                        <a href="{{ url_for('admin_bp.dashboard') }}" class="btn btn-hero-primary btn-lg">
-                            <i class="fas fa-tachometer-alt me-2"></i>
-                            <span>Go to Admin Dashboard</span>
-                        </a>
+                    {% if session.get('user_id') %}
+                    <a href="{{ url_for('main_bp.login') }}" class="btn btn-hero-primary btn-lg">
+                        <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                    </a>
+                    {% elif session.get('student_token') %}
+                    <a href="{{ url_for('student_bp.dashboard') }}" class="btn btn-hero-primary btn-lg">
+                        <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                    </a>
                     {% else %}
-                        <a href="{{ url_for('main_bp.student_login') }}" class="btn btn-hero-primary btn-lg">
-                            <i class="fas fa-user-graduate me-2"></i>
-                            <span>Student Login</span>
-                        </a>
-                        <a href="{{ url_for('main_bp.login') }}" class="btn btn-hero-secondary btn-lg">
-                            <i class="fas fa-user-shield me-2"></i>
-                            <span>Admin Login</span>
-                        </a>
+                    <a href="#login-portal" class="btn btn-hero-primary btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                    </a>
+                    <a href="{{ url_for('main_bp.chatbot') }}" class="btn btn-hero-secondary btn-lg">
+                        <i class="fas fa-robot me-2"></i>Try AI Chatbot
+                    </a>
                     {% endif %}
                 </div>
                 <div class="hero-features">
-                    <div class="hero-feature-item">
-                        <i class="fas fa-shield-alt"></i>
-                        <span>Secure</span>
-                    </div>
-                    <div class="hero-feature-item">
-                        <i class="fas fa-bolt"></i>
-                        <span>Fast</span>
-                    </div>
-                    <div class="hero-feature-item">
-                        <i class="fas fa-brain"></i>
-                        <span>AI-Powered</span>
-                    </div>
+                    <div class="hero-feature-item"><i class="fas fa-shield-alt"></i><span>Secure</span></div>
+                    <div class="hero-feature-item"><i class="fas fa-bolt"></i><span>Fast</span></div>
+                    <div class="hero-feature-item"><i class="fas fa-brain"></i><span>AI-Powered</span></div>
+                    <div class="hero-feature-item"><i class="fas fa-users"></i><span>Multi-Tenant</span></div>
                 </div>
             </div>
         </div>
@@ -65,196 +263,227 @@
 <section class="stats-section py-5">
     <div class="container">
         <div class="row g-4">
-            <div class="col-lg-3 col-md-6 col-6">
+            <div class="col-lg-2 col-md-4 col-6">
                 <div class="stat-card">
                     <div class="stat-icon-wrapper">
-                        <div class="stat-icon">
-                            <i class="fas fa-book"></i>
-                        </div>
+                        <div class="stat-icon"><i class="fas fa-building-columns"></i></div>
                     </div>
-                    <div class="stat-number" data-count="{{ subjects_count }}">0</div>
-                    <div class="stat-label">Subjects</div>
+                    <div class="stat-number" data-count="{{ faculties_count }}">0</div>
+                    <div class="stat-label">Faculties</div>
                     <div class="stat-bar"></div>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-6 col-6">
+            <div class="col-lg-2 col-md-4 col-6">
                 <div class="stat-card">
                     <div class="stat-icon-wrapper">
-                        <div class="stat-icon stat-icon-success">
-                            <i class="fas fa-chalkboard-teacher"></i>
-                        </div>
+                        <div class="stat-icon stat-icon-info"><i class="fas fa-users-rectangle"></i></div>
                     </div>
-                    <div class="stat-number" data-count="{{ lectures_count }}">0</div>
-                    <div class="stat-label">Lectures</div>
-                    <div class="stat-bar stat-bar-success"></div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 col-6">
-                <div class="stat-card">
-                    <div class="stat-icon-wrapper">
-                        <div class="stat-icon stat-icon-info">
-                            <i class="fas fa-user-graduate"></i>
-                        </div>
-                    </div>
-                    <div class="stat-number" data-count="{{ students_count }}">0</div>
-                    <div class="stat-label">Students</div>
+                    <div class="stat-number" data-count="{{ batches_count }}">0</div>
+                    <div class="stat-label">Batches</div>
                     <div class="stat-bar stat-bar-info"></div>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-6 col-6">
+            <div class="col-lg-2 col-md-4 col-6">
                 <div class="stat-card">
                     <div class="stat-icon-wrapper">
-                        <div class="stat-icon stat-icon-warning">
-                            <i class="fas fa-robot"></i>
-                        </div>
+                        <div class="stat-icon stat-icon-success"><i class="fas fa-book"></i></div>
+                    </div>
+                    <div class="stat-number" data-count="{{ subjects_count }}">0</div>
+                    <div class="stat-label">Subjects</div>
+                    <div class="stat-bar stat-bar-success"></div>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-6">
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper">
+                        <div class="stat-icon stat-icon-warning"><i class="fas fa-chalkboard-teacher"></i></div>
+                    </div>
+                    <div class="stat-number" data-count="{{ lectures_count }}">0</div>
+                    <div class="stat-label">Lectures</div>
+                    <div class="stat-bar stat-bar-warning"></div>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-6">
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper">
+                        <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
+                    </div>
+                    <div class="stat-number" data-count="{{ students_count }}">0</div>
+                    <div class="stat-label">Students</div>
+                    <div class="stat-bar"></div>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-6">
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper">
+                        <div class="stat-icon stat-icon-info"><i class="fas fa-robot"></i></div>
                     </div>
                     <div class="stat-number">24/7</div>
                     <div class="stat-label">AI Support</div>
-                    <div class="stat-bar stat-bar-warning"></div>
+                    <div class="stat-bar stat-bar-info"></div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
+<!-- ===== 5-ROLE LOGIN PORTAL ===== -->
+{% if not session.get('user_id') and not session.get('student_token') %}
+<section class="login-portal" id="login-portal">
+    <div class="container">
+        <div class="portal-header">
+            <span class="section-badge"><i class="fas fa-sign-in-alt me-2"></i>Login Portal</span>
+            <h2 class="mt-3">Choose Your Role</h2>
+            <p>Select your role to sign in to the university platform. All roles use unified email & password
+                authentication.</p>
+        </div>
+        <div class="role-grid">
+            <!-- University Manager -->
+            <a href="{{ url_for('main_bp.login') }}" class="role-card super-admin">
+                <div class="role-icon purple"><i class="fas fa-crown"></i></div>
+                <h4>University Manager</h4>
+                <p>Full system control. Manage faculties, departments, and all users.</p>
+                <div class="role-arrow"><i class="fas fa-arrow-right"></i> Sign In</div>
+            </a>
+            <!-- Faculty Head -->
+            <a href="{{ url_for('main_bp.login') }}" class="role-card faculty">
+                <div class="role-icon blue"><i class="fas fa-user-tie"></i></div>
+                <h4>Faculty Head</h4>
+                <p>Manage departments, batches, and teachers within your faculty.</p>
+                <div class="role-arrow"><i class="fas fa-arrow-right"></i> Sign In</div>
+            </a>
+            <!-- Teacher -->
+            <a href="{{ url_for('main_bp.login') }}" class="role-card teacher">
+                <div class="role-icon green"><i class="fas fa-chalkboard-teacher"></i></div>
+                <h4>Teacher</h4>
+                <p>Track attendance, upload lectures, and manage grades for your subjects.</p>
+                <div class="role-arrow"><i class="fas fa-arrow-right"></i> Sign In</div>
+            </a>
+            <!-- Batch Representative -->
+            <a href="{{ url_for('main_bp.login') }}" class="role-card batch-rep">
+                <div class="role-icon amber"><i class="fas fa-user-shield"></i></div>
+                <h4>Batch Representative</h4>
+                <p>Administer your batch — students, lectures, news, and assignments.</p>
+                <div class="role-arrow"><i class="fas fa-arrow-right"></i> Sign In</div>
+            </a>
+            <!-- Student -->
+            <a href="{{ url_for('main_bp.student_login') }}" class="role-card student">
+                <div class="role-icon cyan"><i class="fas fa-user-graduate"></i></div>
+                <h4>Student</h4>
+                <p>View grades, attendance, lectures, and submit assignments. Also supports token login.</p>
+                <div class="role-arrow"><i class="fas fa-arrow-right"></i> Sign In</div>
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
 <!-- Features Section -->
 <section class="features-section py-5">
     <div class="container">
         <div class="section-header text-center mb-5">
-            <span class="section-badge">
-                <i class="fas fa-star me-2"></i>Features
-            </span>
+            <span class="section-badge"><i class="fas fa-star me-2"></i>Features</span>
             <h2 class="section-title mt-3 mb-3">Everything You Need to Succeed</h2>
             <p class="section-description">Powerful tools and features designed for modern education</p>
         </div>
         <div class="row g-4">
             <div class="col-lg-4 col-md-6">
                 <div class="feature-box">
-                    <div class="feature-icon">
-                        <i class="fas fa-book"></i>
-                    </div>
+                    <div class="feature-icon"><i class="fas fa-book"></i></div>
                     <h3>Lectures & Materials</h3>
-                    <p>Access all your lecture materials organized by subject and week. Download resources and stay up to date with your studies.</p>
-                    <a href="{{ url_for('main_bp.subjects') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-arrow-right"></i>Browse Subjects
-                    </a>
+                    <p>Access all your lecture materials organized by subject and week. Download resources and stay up
+                        to date.</p>
+                    <a href="{{ url_for('main_bp.subjects') }}" class="btn btn-outline-primary"><i
+                            class="fas fa-arrow-right"></i>Browse Subjects</a>
                 </div>
             </div>
             <div class="col-lg-4 col-md-6">
                 <div class="feature-box">
-                    <div class="feature-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
+                    <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
                     <h3>Grades & Attendance</h3>
-                    <p>Track your academic progress and attendance records. Get insights into your performance and identify areas for improvement.</p>
-                    {% if session.get('student_token') %}
-                        <a href="{{ url_for('student_bp.grades') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-chart-bar"></i>View Grades
-                        </a>
-                    {% else %}
-                        <a href="{{ url_for('main_bp.student_login') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-sign-in-alt"></i>Login to View
-                        </a>
-                    {% endif %}
+                    <p>Track academic progress and attendance records. Get insights into performance areas.</p>
+                    <a href="{{ url_for('main_bp.login') }}" class="btn btn-outline-primary"><i
+                            class="fas fa-sign-in-alt"></i>Login to View</a>
                 </div>
             </div>
             <div class="col-lg-4 col-md-6">
                 <div class="feature-box">
-                    <div class="feature-icon">
-                        <i class="fas fa-robot"></i>
-                    </div>
+                    <div class="feature-icon"><i class="fas fa-robot"></i></div>
                     <h3>AI Chatbot</h3>
-                    <p>Get instant answers about subjects, lectures, and university news from our intelligent AI chatbot powered by Gemini API.</p>
-                    <a href="{{ url_for('main_bp.chatbot') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-comments"></i>Chat with AI
-                    </a>
+                    <p>Get instant answers about subjects, lectures, and news from our AI chatbot powered by Gemini API.
+                    </p>
+                    <a href="{{ url_for('main_bp.chatbot') }}" class="btn btn-outline-primary"><i
+                            class="fas fa-comments"></i>Chat with AI</a>
                 </div>
             </div>
             <div class="col-lg-4 col-md-6">
                 <div class="feature-box">
-                    <div class="feature-icon">
-                        <i class="fab fa-telegram"></i>
-                    </div>
+                    <div class="feature-icon"><i class="fab fa-telegram"></i></div>
                     <h3>Telegram Integration</h3>
-                    <p>Receive notifications about new lectures, grades, and announcements directly on your phone through our Telegram bot.</p>
-                    <a href="https://t.me/AIDSStudentAssistantBot" class="btn btn-outline-primary" target="_blank">
-                        <i class="fab fa-telegram"></i>Join Bot
-                    </a>
+                    <p>Receive notifications about lectures, grades, and announcements directly on your phone.</p>
+                    <a href="https://t.me/AIDSStudentAssistantBot" class="btn btn-outline-primary" target="_blank"><i
+                            class="fab fa-telegram"></i>Join Bot</a>
                 </div>
             </div>
             <div class="col-lg-4 col-md-6">
                 <div class="feature-box">
-                    <div class="feature-icon">
-                        <i class="fas fa-comments"></i>
-                    </div>
-                    <h3>Feedback System</h3>
-                    <p>Submit feedback about lectures and courses. Your input helps us improve the educational experience for everyone.</p>
-                    {% if session.get('student_token') %}
-                        <a href="{{ url_for('student_bp.feedback') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-paper-plane"></i>Submit Feedback
-                        </a>
-                    {% else %}
-                        <a href="{{ url_for('main_bp.student_login') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-sign-in-alt"></i>Login to Submit
-                        </a>
-                    {% endif %}
+                    <div class="feature-icon"><i class="fas fa-sitemap"></i></div>
+                    <h3>Multi-Tenant Hierarchy</h3>
+                    <p>University → Faculty → Department → Batch hierarchy with scoped access and role-based
+                        permissions.</p>
+                    <a href="#login-portal" class="btn btn-outline-primary"><i class="fas fa-sign-in-alt"></i>Get
+                        Started</a>
                 </div>
             </div>
             <div class="col-lg-4 col-md-6">
                 <div class="feature-box">
-                    <div class="feature-icon">
-                        <i class="fas fa-newspaper"></i>
-                    </div>
+                    <div class="feature-icon"><i class="fas fa-newspaper"></i></div>
                     <h3>Latest News</h3>
-                    <p>Stay updated with the latest university news, announcements, and events. Never miss important information again.</p>
-                    <a href="{{ url_for('main_bp.news') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-newspaper"></i>View News
-                    </a>
+                    <p>Stay updated with the latest university news, announcements, and events.</p>
+                    <a href="{{ url_for('main_bp.news') }}" class="btn btn-outline-primary"><i
+                            class="fas fa-newspaper"></i>View News</a>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-
 <!-- Latest News Section -->
 <section class="news-section py-5">
     <div class="container">
         <div class="section-header text-center mb-5">
-            <span class="section-badge">
-                <i class="fas fa-newspaper me-2"></i>News
-            </span>
+            <span class="section-badge"><i class="fas fa-newspaper me-2"></i>News</span>
             <h2 class="section-title mt-3 mb-3">Latest Updates & Announcements</h2>
             <p class="section-description">Stay informed with the latest news and events</p>
         </div>
-        
         <div class="row g-4">
             {% if news %}
-                {% for item in news %}
-                    <div class="col-lg-4 col-md-6">
-                        <div class="card h-100">
-                            <div class="card-header d-flex justify-content-between align-items-start">
-                                <h5 class="mb-0 flex-grow-1">{{ item.title }}</h5>
-                                <span class="badge bg-primary ms-2">{{ item.created_at[:10] }}</span>
-                            </div>
-                            <div class="card-body">
-                                <p class="mb-0">{{ item.content[:100] }}{% if item.content|length > 100 %}...{% endif %}</p>
-                            </div>
-                            <div class="card-footer bg-transparent">
-                                <a href="{{ url_for('main_bp.news_detail', news_id=item.id) }}" class="btn btn-outline-primary w-100">
-                                    <i class="fas fa-arrow-right"></i>Read More
-                                </a>
-                            </div>
-                        </div>
+            {% for item in news %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-start">
+                        <h5 class="mb-0 flex-grow-1">{{ item.title }}</h5>
+                        <span class="badge bg-primary ms-2">{{ item.created_at[:10] }}</span>
                     </div>
-                {% endfor %}
-            {% else %}
-                <div class="col-12">
-                    <div class="alert alert-info d-flex align-items-center">
-                        <i class="fas fa-info-circle me-3 fs-4"></i>
-                        <span>No news available at the moment.</span>
+                    <div class="card-body">
+                        <p class="mb-0">{{ item.content[:100] }}{% if item.content|length > 100 %}...{% endif %}</p>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <a href="{{ url_for('main_bp.news_detail', news_id=item.id) }}"
+                            class="btn btn-outline-primary w-100">
+                            <i class="fas fa-arrow-right"></i>Read More
+                        </a>
                     </div>
                 </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="col-12">
+                <div class="alert alert-info d-flex align-items-center">
+                    <i class="fas fa-info-circle me-3 fs-4"></i>
+                    <span>No news available at the moment.</span>
+                </div>
+            </div>
             {% endif %}
         </div>
     </div>
@@ -266,26 +495,21 @@
         <div class="row justify-content-center">
             <div class="col-lg-8 text-center">
                 <h2 class="mb-3">Ready to Enhance Your Learning Experience?</h2>
-                <p class="lead mb-4">Join University AI Batch today and transform the way you learn.</p>
+                <p class="lead mb-4">Join University AI Batch today. 5 roles, full hierarchy, AI-powered learning.</p>
                 <div class="d-flex flex-wrap gap-3 justify-content-center">
-                    {% if not session.get('student_token') and not session.get('is_admin') %}
-                        <a href="{{ url_for('main_bp.student_login') }}" class="btn btn-light btn-lg">
-                            <i class="fas fa-user-graduate"></i>Student Login
-                        </a>
-                        <a href="{{ url_for('main_bp.chatbot') }}" class="btn btn-outline-light btn-lg">
-                            <i class="fas fa-robot"></i>Try AI Chatbot
-                        </a>
+                    {% if not session.get('user_id') and not session.get('student_token') %}
+                    <a href="#login-portal" class="btn btn-light btn-lg"><i class="fas fa-sign-in-alt"></i> Sign In</a>
+                    <a href="{{ url_for('main_bp.chatbot') }}" class="btn btn-outline-light btn-lg"><i
+                            class="fas fa-robot"></i> Try AI Chatbot</a>
                     {% else %}
-                        <a href="{{ url_for('main_bp.subjects') }}" class="btn btn-light btn-lg">
-                            <i class="fas fa-book"></i>Browse Subjects
-                        </a>
-                        <a href="{{ url_for('main_bp.chatbot') }}" class="btn btn-outline-light btn-lg">
-                            <i class="fas fa-robot"></i>AI Chatbot
-                        </a>
+                    <a href="{{ url_for('main_bp.subjects') }}" class="btn btn-light btn-lg"><i class="fas fa-book"></i>
+                        Browse Subjects</a>
+                    <a href="{{ url_for('main_bp.chatbot') }}" class="btn btn-outline-light btn-lg"><i
+                            class="fas fa-robot"></i> AI Chatbot</a>
                     {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </section>
-{% endblock %} 
+{% endblock %}

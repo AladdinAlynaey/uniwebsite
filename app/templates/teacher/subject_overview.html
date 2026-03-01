@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Subject Overview{% endblock %}
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-book me-2 text-primary"></i>{{ subject.name if subject else 'Subject' }}</h2>
+            <p class="text-muted mb-0">Batch: {{ batch.name if batch else 'Unknown' }} · {{ students|length }} students
+            </p>
+        </div>
+        <a href="{{ url_for('teacher_bp.dashboard') }}" class="btn btn-outline-secondary"><i
+                class="fas fa-arrow-left me-1"></i>Back</a>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-3">
+            <a href="{{ url_for('teacher_bp.attendance', subject_id=subject.id, batch_id=batch.id) }}"
+                class="card text-center py-4 text-decoration-none">
+                <i class="fas fa-calendar-check fa-2x text-primary mb-2"></i>
+                <strong>Attendance</strong>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('teacher_bp.grades', subject_id=subject.id, batch_id=batch.id) }}"
+                class="card text-center py-4 text-decoration-none">
+                <i class="fas fa-chart-line fa-2x text-success mb-2"></i>
+                <strong>Grades</strong>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('teacher_bp.lectures', subject_id=subject.id, batch_id=batch.id) }}"
+                class="card text-center py-4 text-decoration-none">
+                <i class="fas fa-book-open fa-2x text-info mb-2"></i>
+                <strong>Lectures</strong>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('teacher_bp.assignments', subject_id=subject.id, batch_id=batch.id) }}"
+                class="card text-center py-4 text-decoration-none">
+                <i class="fas fa-tasks fa-2x text-warning mb-2"></i>
+                <strong>Assignments</strong>
+            </a>
+        </div>
+    </div>
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-users me-2"></i>Students ({{ students|length }})</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in students %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ s.name }}</td>
+                            <td>{{ s.email }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">No students in this batch.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

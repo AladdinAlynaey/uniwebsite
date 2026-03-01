@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% block title %}Teacher Dashboard{% endblock %}
+{% block extra_css %}
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, #1e3a5f 0%, #2d6a4f 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: var(--radius-xl);
+        margin-bottom: 2rem;
+    }
+
+    .dashboard-header h1 {
+        margin-bottom: 0.5rem;
+        font-size: 2rem;
+    }
+
+    .dashboard-header p {
+        opacity: 0.85;
+        margin-bottom: 0;
+    }
+
+    .role-badge {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.25rem 0.75rem;
+        border-radius: 2rem;
+        font-size: 0.8rem;
+        display: inline-block;
+        margin-top: 0.5rem;
+    }
+
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .stat-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+    }
+
+    .stat-icon.blue {
+        background: rgba(59, 130, 246, 0.15);
+        color: #3b82f6;
+    }
+
+    .stat-icon.green {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+    }
+
+    .stat-icon.amber {
+        background: rgba(245, 158, 11, 0.15);
+        color: #f59e0b;
+    }
+
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        margin-bottom: 0;
+    }
+
+    .subject-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .subject-card {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        transition: all 0.3s;
+    }
+
+    .subject-card:hover {
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-2px);
+    }
+
+    .subject-card-header {
+        padding: 1.25rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .subject-card-header h5 {
+        margin-bottom: 0.25rem;
+        font-size: 1.1rem;
+    }
+
+    .subject-card-body {
+        padding: 1.25rem;
+    }
+
+    .subject-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+
+    .subject-actions a {
+        padding: 0.6rem;
+        text-align: center;
+        border-radius: var(--radius-md);
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+    }
+
+    .subject-actions a:hover {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+
+    .subject-actions a i {
+        display: block;
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+        color: var(--primary);
+    }
+
+    .subject-actions a:hover i {
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-header {
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .stats-row {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .stat-card {
+            flex-direction: column;
+            text-align: center;
+            padding: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="dashboard-header">
+        <h1><i class="fas fa-chalkboard-teacher me-2"></i>Teacher Dashboard</h1>
+        <p>Manage your subjects, attendance, and grades.</p>
+        <span class="role-badge"><i class="fas fa-chalkboard me-1"></i>Teacher — {{ user.name }}</span>
+    </div>
+
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="fas fa-book"></i></div>
+            <div>
+                <p class="stat-value">{{ stats.subjects }}</p>
+                <p class="stat-label">Subjects</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="fas fa-users-rectangle"></i></div>
+            <div>
+                <p class="stat-value">{{ stats.batches }}</p>
+                <p class="stat-label">Batches</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon amber"><i class="fas fa-user-graduate"></i></div>
+            <div>
+                <p class="stat-value">{{ stats.total_students }}</p>
+                <p class="stat-label">Total Students</p>
+            </div>
+        </div>
+    </div>
+
+    <h4 class="mb-3"><i class="fas fa-book-open me-2 text-primary"></i>My Subjects</h4>
+    <div class="subject-cards">
+        {% for a in assignments %}
+        <div class="subject-card">
+            <div class="subject-card-header">
+                <h5>{{ a.get('subject_name', 'Unknown Subject') }}</h5>
+                <div class="d-flex gap-2">
+                    <span class="badge bg-primary">{{ a.get('batch_name', 'Unknown Batch') }}</span>
+                    <span class="badge bg-secondary">{{ a.get('student_count', 0) }} students</span>
+                </div>
+            </div>
+            <div class="subject-card-body">
+                <div class="subject-actions">
+                    <a href="{{ url_for('teacher_bp.attendance', subject_id=a.subject_id, batch_id=a.batch_id) }}">
+                        <i class="fas fa-calendar-check"></i>Attendance
+                    </a>
+                    <a href="{{ url_for('teacher_bp.grades', subject_id=a.subject_id, batch_id=a.batch_id) }}">
+                        <i class="fas fa-chart-line"></i>Grades
+                    </a>
+                    <a href="{{ url_for('teacher_bp.lectures', subject_id=a.subject_id, batch_id=a.batch_id) }}">
+                        <i class="fas fa-book-open"></i>Lectures
+                    </a>
+                    <a href="{{ url_for('teacher_bp.assignments', subject_id=a.subject_id, batch_id=a.batch_id) }}">
+                        <i class="fas fa-tasks"></i>Assignments
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted" style="grid-column: 1 / -1;">
+            <i class="fas fa-chalkboard fa-3x mb-3 opacity-50"></i>
+            <p>No subjects assigned yet. Contact your Faculty Head to get assigned.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

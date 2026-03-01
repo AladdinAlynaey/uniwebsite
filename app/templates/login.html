@@ -1,29 +1,273 @@
 {% extends "base.html" %}
 
-{% block title %}Admin Login - University AI Batch{% endblock %}
+{% block title %}Sign In — University AI Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-wrapper {
+        min-height: calc(100vh - 200px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .login-container {
+        width: 100%;
+        max-width: 460px;
+    }
+
+    .login-card {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    }
+
+    .login-header {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
+        padding: 2.5rem 2rem 2rem;
+        text-align: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .login-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+        animation: shimmer 6s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+
+        0%,
+        100% {
+            transform: rotate(0deg)
+        }
+
+        50% {
+            transform: rotate(180deg)
+        }
+    }
+
+    .login-header-icon {
+        width: 72px;
+        height: 72px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        margin-bottom: 1rem;
+        position: relative;
+    }
+
+    .login-header h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.3rem;
+        position: relative;
+    }
+
+    .login-header p {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+        position: relative;
+    }
+
+    .login-body {
+        padding: 2rem 2rem 1.5rem;
+    }
+
+    .form-floating-modern {
+        position: relative;
+        margin-bottom: 1.25rem;
+    }
+
+    .form-floating-modern input {
+        width: 100%;
+        padding: 0.85rem 1rem 0.85rem 2.75rem;
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        font-size: 0.95rem;
+        transition: border-color 0.3s;
+        outline: none;
+    }
+
+    .form-floating-modern input:focus {
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+    }
+
+    .form-floating-modern .input-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .login-btn-primary {
+        width: 100%;
+        padding: 0.85rem;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .login-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.35);
+    }
+
+    .login-footer {
+        padding: 0 2rem 2rem;
+        text-align: center;
+    }
+
+    .login-divider {
+        position: relative;
+        text-align: center;
+        margin: 1.25rem 0;
+    }
+
+    .login-divider::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: var(--border-color);
+    }
+
+    .login-divider span {
+        position: relative;
+        background: var(--bg-primary);
+        padding: 0 1rem;
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+    }
+
+    .role-indicators {
+        display: flex;
+        justify-content: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-top: 0.75rem;
+    }
+
+    .role-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.3rem 0.65rem;
+        border-radius: 20px;
+        font-size: 0.72rem;
+        font-weight: 500;
+        border: 1px solid var(--border-color);
+        background: var(--bg-secondary);
+        color: var(--text-secondary);
+    }
+
+    /* Responsive */
+    @media (max-width: 576px) {
+        .login-header {
+            padding: 1.75rem 1.25rem 1.5rem;
+        }
+
+        .login-body {
+            padding: 1.5rem 1.25rem 1rem;
+        }
+
+        .login-footer {
+            padding: 0 1.25rem 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center login-container">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">Admin Login</h4>
+<div class="login-wrapper">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-header-icon"><i class="fas fa-graduation-cap"></i></div>
+                <h2>University AI Platform</h2>
+                <p>Sign in with your email & password</p>
             </div>
-            <div class="card-body">
-                <form method="POST" action="{{ url_for('main_bp.login') }}">
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Admin Password</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
+            <div class="login-body">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} py-2 px-3" style="font-size:0.85rem; border-radius:10px;">
+                    <i
+                        class="fas fa-{% if category == 'danger' %}exclamation-circle{% elif category == 'success' %}check-circle{% else %}info-circle{% endif %} me-1"></i>
+                    {{ message }}
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+
+                <form method="POST" action="{{ url_for('main_bp.login') }}" autocomplete="on" id="loginForm">
+                    <div class="form-floating-modern">
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input type="email" name="email" id="loginEmail" placeholder="Email address" required
+                            autocomplete="email" autofocus>
                     </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Login</button>
+                    <div class="form-floating-modern">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" name="password" id="loginPassword" placeholder="Password" required
+                            autocomplete="current-password">
                     </div>
+                    <button type="submit" class="login-btn-primary">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Sign In
+                    </button>
                 </form>
-                <div class="mt-3 text-center">
-                    <p>Are you a student? <a href="{{ url_for('main_bp.student_login') }}">Login with your token</a></p>
+            </div>
+            <div class="login-footer">
+                <div class="login-divider"><span>Works for all roles</span></div>
+                <div class="role-indicators">
+                    <span class="role-chip" style="border-color:rgba(139,92,246,0.3);color:#8b5cf6;"><i
+                            class="fas fa-crown"></i> Manager</span>
+                    <span class="role-chip" style="border-color:rgba(59,130,246,0.3);color:#3b82f6;"><i
+                            class="fas fa-user-tie"></i> Faculty</span>
+                    <span class="role-chip" style="border-color:rgba(16,185,129,0.3);color:#10b981;"><i
+                            class="fas fa-chalkboard-teacher"></i> Teacher</span>
+                    <span class="role-chip" style="border-color:rgba(245,158,11,0.3);color:#f59e0b;"><i
+                            class="fas fa-user-shield"></i> Batch Rep</span>
+                </div>
+                <div class="mt-3">
+                    <a href="{{ url_for('main_bp.student_login') }}"
+                        style="color:#06b6d4; font-size:0.9rem; text-decoration:none;">
+                        <i class="fas fa-user-graduate me-1"></i>Student? Login with token here →
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}
