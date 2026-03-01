@@ -15,6 +15,7 @@ env/
 
 # Data (JSON storage - user data)
 data/
+data copy/
 
 # Uploads
 app/static/uploads/

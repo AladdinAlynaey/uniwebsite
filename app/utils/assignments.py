@@ -1,41 +1,67 @@
 """
 Assignment Management Utility
-Handles assignment CRUD operations and student submissions
+Handles assignment CRUD operations and student submissions.
+
+Uses Elasticsearch for persistence via the uniwebsite_assignments index.
 """
 
-import json
 import os
 from datetime import datetime
 from app.models.student import Student
+from app.utils.elasticsearch_client import get_es_client, ensure_index, ES_INDEX_PREFIX
 
-ASSIGNMENTS_FILE = 'app/data/assignments.json'
+ASSIGNMENTS_INDEX = f'{ES_INDEX_PREFIX}assignments'
+
+# Default empty structure
+DEFAULT_ASSIGNMENTS = {'final_projects': [], 'weekly_homework': [], 'presentations': []}
+
+
+def _ensure_assignments_index():
+    """Ensure the assignments index exists."""
+    ensure_index(ASSIGNMENTS_INDEX)
 
 
 def load_assignments():
-    """Load all assignments from JSON file"""
+    """Load all assignments from Elasticsearch."""
     try:
-        if os.path.exists(ASSIGNMENTS_FILE):
-            with open(ASSIGNMENTS_FILE, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-                # Ensure all categories exist
-                if 'presentations' not in data:
-                    data['presentations'] = []
-                return data
-        return {'final_projects': [], 'weekly_homework': [], 'presentations': []}
+        es = get_es_client()
+        _ensure_assignments_index()
+        
+        # Assignments are stored as a single document with ID 'assignments_data'
+        if es.exists(index=ASSIGNMENTS_INDEX, id='assignments_data'):
+            result = es.get(index=ASSIGNMENTS_INDEX, id='assignments_data')
+            data = result['_source']
+            # Ensure all categories exist
+            if 'presentations' not in data:
+                data['presentations'] = []
+            if 'final_projects' not in data:
+                data['final_projects'] = []
+            if 'weekly_homework' not in data:
+                data['weekly_homework'] = []
+            return data
+        
+        return DEFAULT_ASSIGNMENTS.copy()
+        
     except Exception as e:
-        print(f"Error loading assignments: {e}")
-        return {'final_projects': [], 'weekly_homework': [], 'presentations': []}
+        print(f"Error loading assignments from ES: {e}")
+        return DEFAULT_ASSIGNMENTS.copy()
 
 
 def save_assignments(assignments_data):
-    """Save assignments to JSON file"""
+    """Save assignments to Elasticsearch."""
     try:
-        os.makedirs(os.path.dirname(ASSIGNMENTS_FILE), exist_ok=True)
-        with open(ASSIGNMENTS_FILE, 'w', encoding='utf-8') as f:
-            json.dump(assignments_data, f, indent=2, ensure_ascii=False)
+        es = get_es_client()
+        _ensure_assignments_index()
+        
+        es.index(
+            index=ASSIGNMENTS_INDEX,
+            id='assignments_data',
+            document=assignments_data,
+            refresh='true'
+        )
         return True
     except Exception as e:
-        print(f"Error saving assignments: {e}")
+        print(f"Error saving assignments to ES: {e}")
         return False
 
 

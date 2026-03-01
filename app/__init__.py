@@ -58,4 +58,11 @@ def create_app():
     app.register_blueprint(student_bp, url_prefix='/student')
     app.register_blueprint(api_bp, url_prefix='/api')
     
+    # Initialize Elasticsearch and migrate JSON data (idempotent)
+    try:
+        from app.utils.elasticsearch_client import migrate_json_to_es
+        migrate_json_to_es()
+    except Exception as e:
+        print(f"⚠️  Elasticsearch migration warning: {e}")
+    
     return app 

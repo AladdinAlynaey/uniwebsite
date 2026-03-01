@@ -1,127 +1,255 @@
-import json
-import os
-import shutil
+"""
+BaseModel — Elasticsearch-backed data layer for UniWebsite.
+
+Provides CRUD operations via Elasticsearch while maintaining the exact same
+API as the original JSON-based implementation. All subclasses (Student, Subject,
+Lecture, Attendance, Grade, Feedback, News, TelegramUser) work without changes.
+"""
+
 import uuid
-from datetime import datetime
 import time
-import random
+from datetime import datetime
+from app.utils.elasticsearch_client import get_es_client, get_index_name, ensure_index
+
 
 class BaseModel:
-    """Base model for JSON data handling"""
-    
-    DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'data')
+    """Base model for Elasticsearch data handling"""
     
     @classmethod
-    def get_data_file_path(cls):
-        """Get the path to the JSON data file for this model"""
-        os.makedirs(cls.DATA_DIR, exist_ok=True)
-        return os.path.join(cls.DATA_DIR, f"{cls.__name__.lower()}.json")
+    def _get_index(cls):
+        """Get the Elasticsearch index name for this model."""
+        return get_index_name(cls.__name__)
+    
+    @classmethod
+    def _ensure_index(cls):
+        """Ensure the index exists for this model."""
+        ensure_index(cls._get_index())
     
     @classmethod
     def load_all(cls):
-        """Load all records from the JSON file with improved error handling"""
+        """Load all records from Elasticsearch.
+        
+        Returns:
+            list: List of record dictionaries
+        """
         try:
-            with open(cls.get_data_file_path(), 'r') as f:
-                data = json.load(f)
-                # Validate that we have a list of records
-                if not isinstance(data, list):
-                    print(f"Warning: {cls.__name__} data file contains invalid format. Resetting to empty list.")
-                    return []
-                return data
-        except FileNotFoundError:
-            # File doesn't exist yet, return empty list
-            return []
-        except json.JSONDecodeError as e:
-            # JSON is malformed, log error and return empty list
-            print(f"Error: {cls.__name__} data file is corrupted. {str(e)}. Resetting to empty list.")
-            # Create a backup of the corrupted file
-            try:
-                backup_path = f"{cls.get_data_file_path()}.backup.{datetime.now().strftime('%Y%m%d%H%M%S')}"
-                shutil.copy2(cls.get_data_file_path(), backup_path)
-                print(f"Created backup of corrupted file at {backup_path}")
-            except Exception as backup_error:
-                print(f"Failed to create backup: {str(backup_error)}")
+            es = get_es_client()
+            index = cls._get_index()
+            
+            # Ensure index exists
+            if not es.indices.exists(index=index):
+                return []
+            
+            # Search for all documents, up to 10000
+            result = es.search(
+                index=index,
+                body={"query": {"match_all": {}}, "size": 10000},
+                request_timeout=30
+            )
+            
+            records = []
+            for hit in result['hits']['hits']:
+                record = hit['_source']
+                # Ensure 'id' field is present
+                if 'id' not in record:
+                    record['id'] = hit['_id']
+                records.append(record)
+            
+            return records
+            
+        except Exception as e:
+            print(f"Error loading {cls.__name__} from Elasticsearch: {e}")
             return []
     
     @classmethod
     def save_all(cls, data):
-        """Save all records to the JSON file using atomic write pattern"""
-        # Validate data is a list
+        """Save all records to Elasticsearch (full replace).
+        
+        This replaces all documents in the index with the provided data.
+        Used by models that do bulk updates (Attendance, Grade).
+        
+        Args:
+            data: List of record dictionaries
+        """
         if not isinstance(data, list):
-            print(f"Warning: Attempting to save non-list data to {cls.__name__} file. Converting to list.")
             if data is None:
                 data = []
             else:
                 data = [data]
         
-        # Create a temporary file
-        temp_file = f"{cls.get_data_file_path()}.{time.time()}.{random.randint(1000, 9999)}.tmp"
         try:
-            # Write to temp file first
-            with open(temp_file, 'w') as f:
-                json.dump(data, f, indent=2, default=str)
-                # Ensure the write is flushed to disk
-                f.flush()
-                os.fsync(f.fileno())
+            es = get_es_client()
+            index = cls._get_index()
+            cls._ensure_index()
             
-            # Rename temp file to target file (atomic operation on most filesystems)
-            os.replace(temp_file, cls.get_data_file_path())
-        except Exception as e:
-            print(f"Error saving {cls.__name__} data: {str(e)}")
-            # Clean up temp file if it exists
-            if os.path.exists(temp_file):
+            # Build a set of IDs in the new data
+            new_ids = set()
+            for record in data:
+                if 'id' not in record:
+                    record['id'] = str(uuid.uuid4())
+                new_ids.add(record['id'])
+            
+            # Get existing document IDs
+            existing_ids = set()
+            try:
+                if es.indices.exists(index=index):
+                    result = es.search(
+                        index=index,
+                        body={"query": {"match_all": {}}, "_source": False, "size": 10000},
+                        request_timeout=30
+                    )
+                    existing_ids = {hit['_id'] for hit in result['hits']['hits']}
+            except Exception:
+                pass
+            
+            # Delete documents that are no longer in the data
+            ids_to_delete = existing_ids - new_ids
+            for doc_id in ids_to_delete:
                 try:
-                    os.remove(temp_file)
-                except:
+                    es.delete(index=index, id=doc_id, refresh=False)
+                except Exception:
                     pass
+            
+            # Index all current documents
+            from elasticsearch.helpers import bulk as es_bulk
+            
+            actions = []
+            for record in data:
+                actions.append({
+                    "_index": index,
+                    "_id": record['id'],
+                    "_source": record
+                })
+            
+            if actions:
+                es_bulk(es, actions, raise_on_error=False, refresh='true')
+            else:
+                # If empty data, just refresh
+                try:
+                    es.indices.refresh(index=index)
+                except Exception:
+                    pass
+                    
+        except Exception as e:
+            print(f"Error saving {cls.__name__} to Elasticsearch: {e}")
             raise
     
     @classmethod
     def find_by_id(cls, id):
-        """Find a record by ID"""
-        records = cls.load_all()
-        for record in records:
-            if record.get('id') == id:
-                return record
-        return None
+        """Find a record by ID.
+        
+        Args:
+            id: The document ID
+            
+        Returns:
+            dict or None: The record dictionary, or None if not found
+        """
+        try:
+            es = get_es_client()
+            index = cls._get_index()
+            
+            if not es.indices.exists(index=index):
+                return None
+            
+            result = es.get(index=index, id=id)
+            record = result['_source']
+            if 'id' not in record:
+                record['id'] = result['_id']
+            return record
+            
+        except Exception:
+            # Document not found or index doesn't exist
+            return None
     
     @classmethod
     def create(cls, data):
-        """Create a new record"""
-        records = cls.load_all()
+        """Create a new record.
         
-        # Generate ID if not provided
-        if 'id' not in data:
-            data['id'] = str(uuid.uuid4())
-        
-        # Add timestamps
-        data['created_at'] = datetime.now().isoformat()
-        data['updated_at'] = data['created_at']
-        
-        records.append(data)
-        cls.save_all(records)
-        return data
+        Args:
+            data: Record dictionary
+            
+        Returns:
+            dict: The created record with generated ID and timestamps
+        """
+        try:
+            es = get_es_client()
+            index = cls._get_index()
+            cls._ensure_index()
+            
+            # Generate ID if not provided
+            if 'id' not in data:
+                data['id'] = str(uuid.uuid4())
+            
+            # Add timestamps
+            data['created_at'] = datetime.now().isoformat()
+            data['updated_at'] = data['created_at']
+            
+            es.index(index=index, id=data['id'], document=data, refresh='true')
+            return data
+            
+        except Exception as e:
+            print(f"Error creating {cls.__name__} in Elasticsearch: {e}")
+            raise
     
     @classmethod
     def update(cls, id, data):
-        """Update an existing record"""
-        records = cls.load_all()
-        for i, record in enumerate(records):
-            if record.get('id') == id:
-                # Update the record
-                records[i].update(data)
-                records[i]['updated_at'] = datetime.now().isoformat()
-                cls.save_all(records)
-                return records[i]
-        return None
+        """Update an existing record.
+        
+        Args:
+            id: The document ID
+            data: Updated fields dictionary
+            
+        Returns:
+            dict or None: The updated record, or None if not found
+        """
+        try:
+            es = get_es_client()
+            index = cls._get_index()
+            
+            # Check if document exists
+            if not es.exists(index=index, id=id):
+                return None
+            
+            # Get existing document
+            existing = es.get(index=index, id=id)['_source']
+            
+            # Merge updates
+            existing.update(data)
+            existing['updated_at'] = datetime.now().isoformat()
+            
+            # Re-index the full document
+            es.index(index=index, id=id, document=existing, refresh='true')
+            return existing
+            
+        except Exception as e:
+            print(f"Error updating {cls.__name__} in Elasticsearch: {e}")
+            return None
     
     @classmethod
     def delete(cls, id):
-        """Delete a record"""
-        records = cls.load_all()
-        for i, record in enumerate(records):
-            if record.get('id') == id:
-                deleted = records.pop(i)
-                cls.save_all(records)
-                return deleted
-        return None 
+        """Delete a record.
+        
+        Args:
+            id: The document ID
+            
+        Returns:
+            dict or None: The deleted record, or None if not found
+        """
+        try:
+            es = get_es_client()
+            index = cls._get_index()
+            
+            # Get the document first
+            try:
+                result = es.get(index=index, id=id)
+                deleted = result['_source']
+            except Exception:
+                return None
+            
+            # Delete the document
+            es.delete(index=index, id=id, refresh='true')
+            return deleted
+            
+        except Exception as e:
+            print(f"Error deleting {cls.__name__} from Elasticsearch: {e}")
+            return None

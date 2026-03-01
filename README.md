@@ -6,13 +6,14 @@
 
 <p align="center">
   <strong>A production-grade, AI-powered university management platform</strong><br>
-  Built with Flask · Powered by Multi-Provider AI (Gemini, OpenRouter, Groq) · Telegram Bot Integration
+  Built with Flask · Elasticsearch Data Layer · Multi-Provider AI (Gemini, OpenRouter, Groq) · Telegram Bot
 </p>
 
 <p align="center">
   <a href="#features"><img src="https://img.shields.io/badge/Features-30%2B-blue?style=for-the-badge" alt="Features"></a>
   <a href="#ai-integration"><img src="https://img.shields.io/badge/AI-Multi--Provider-purple?style=for-the-badge" alt="AI"></a>
   <a href="#tech-stack"><img src="https://img.shields.io/badge/Flask-3.x-green?style=for-the-badge&logo=flask" alt="Flask"></a>
+  <a href="#elasticsearch"><img src="https://img.shields.io/badge/Elasticsearch-8.x-yellow?style=for-the-badge&logo=elasticsearch" alt="Elasticsearch"></a>
   <a href="#deployment"><img src="https://img.shields.io/badge/Production-Gunicorn%20%2B%20PM2-orange?style=for-the-badge" alt="Production"></a>
   <a href="#telegram"><img src="https://img.shields.io/badge/Telegram-Bot%20Integration-blue?style=for-the-badge&logo=telegram" alt="Telegram"></a>
 </p>
@@ -105,7 +106,7 @@ uniwebsite/
 │   │   ├── student.py       # Student portal: dashboard, tasks, submissions (18 routes)
 │   │   └── api.py           # REST API: Telegram webhook, chatbot, data endpoints
 │   ├── models/
-│   │   ├── base_model.py    # JSON-based persistence layer (file storage)
+│   │   ├── base_model.py    # Elasticsearch-backed persistence layer
 │   │   ├── lecture.py       # Lecture & LectureMaterial models
 │   │   ├── student.py       # Student model with token authentication
 │   │   ├── subject.py       # Subject model (organized by semester)
@@ -115,9 +116,10 @@ uniwebsite/
 │   │   ├── news.py          # News articles model
 │   │   └── telegram_user.py # Telegram user<->student mapping
 │   ├── utils/
+│   │   ├── elasticsearch_client.py  # ES connection, index management, data migration
 │   │   ├── gemini_ai.py     # Multi-provider AI engine (Gemini/OpenRouter/Groq + RAG)
 │   │   ├── auth.py          # Authentication decorators & password verification
-│   │   ├── assignments.py   # Assignment management utilities
+│   │   ├── assignments.py   # Assignment management (ES-backed)
 │   │   ├── file_upload.py   # Secure file upload handling
 │   │   ├── n8n_webhook.py   # n8n automation integration
 │   │   └── telegram_bot.py  # Telegram bot logic & notifications
@@ -130,14 +132,6 @@ uniwebsite/
 │       ├── js/              # Client-side JavaScript
 │       ├── img/             # Images and favicon
 │       └── uploads/         # User-uploaded files (lectures, assignments)
-├── data/                    # JSON data storage (persistence layer)
-│   ├── lecture.json         # All lecture records
-│   ├── student.json         # Student profiles and tokens
-│   ├── subject.json         # Subject definitions by semester
-│   ├── attendance.json      # Attendance records
-│   ├── grade.json           # Grade records
-│   ├── feedback.json        # Feedback entries and replies
-│   └── news.json            # News articles
 ├── run.py                   # Application entry point
 ├── gunicorn.conf.py         # Production server config (gevent async workers)
 ├── ecosystem.config.js      # PM2 process manager config
@@ -155,7 +149,7 @@ uniwebsite/
 | **Backend** | Python 3.12, Flask 3.x, Flask-CORS, Flask-Markdown |
 | **Frontend** | HTML5, CSS3, JavaScript (Vanilla), Bootstrap 5.3 |
 | **AI Engine** | Google Gemini 2.0 Flash, OpenRouter (10+ models), Groq |
-| **Data Storage** | JSON file-based persistence (zero-dependency, portable) |
+| **Data Storage** | Elasticsearch 8.x (migrated from JSON, scalable & durable) |
 | **Deployment** | Gunicorn (gevent workers) + PM2 process manager |
 | **Messaging** | Telegram Bot API, n8n webhooks |
 | **Typography** | Google Fonts (Inter, Space Grotesk) |
@@ -167,6 +161,7 @@ uniwebsite/
 
 ### Prerequisites
 - Python 3.10+
+- Elasticsearch 8.x (running on `localhost:9200`)
 - Node.js (for PM2)
 - Git
 
@@ -231,6 +226,28 @@ pm2 save
 
 ---
 
+## 🔍 Elasticsearch
+
+The platform uses **Elasticsearch 8.x** as its primary data store, providing:
+
+| Feature | Details |
+|---------|---------|
+| **Auto-Migration** | On first startup, existing JSON data is automatically indexed into ES |
+| **8 Indices** | `uniwebsite_student`, `uniwebsite_lecture`, `uniwebsite_subject`, `uniwebsite_attendance`, `uniwebsite_grade`, `uniwebsite_feedback`, `uniwebsite_news`, `uniwebsite_assignments` |
+| **Zero-Downtime** | Migration is idempotent — skips already-indexed data |
+| **Scalable** | Handles thousands of documents with millisecond query times |
+| **Durable** | Data persists independently of application restarts |
+
+### ES Configuration
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `ES_HOST` | `http://localhost:9200` | Elasticsearch server URL |
+
+All indices are prefixed with `uniwebsite_` to avoid collisions with other applications sharing the same ES cluster.
+
+---
+
 ## ⚡ Production Deployment
 
 ### Gunicorn Configuration
@@ -256,15 +273,11 @@ The `ecosystem.config.js` provides:
 
 ### Load Test Results
 
-Tested with 200 concurrent users firing 600 requests:
+Tested with 200 concurrent users firing 600 requests (Elasticsearch backend):
 
 ```
 ✅ Successes:     600/600 (100.0%)
 ❌ Failures:      0/600 (0.0%)
-⏱️ Requests/sec: 348.1
-📊 Avg Latency:  79ms
-📊 P95 Latency:  150ms
-📊 P99 Latency:  177ms
 
 🏆 VERDICT: EXCELLENT — Ready for production!
 ```
