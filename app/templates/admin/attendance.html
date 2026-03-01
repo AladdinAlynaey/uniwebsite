@@ -1,0 +1,498 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Attendance{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Manage Attendance</h1>
+        <a href="{{ url_for('admin_bp.dashboard') }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Subject Selection -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Select Subject</h5>
+        </div>
+        <div class="card-body">
+            <form id="subjectForm" method="GET" action="{{ url_for('admin_bp.attendance') }}">
+                <div class="row align-items-end">
+                    <div class="col-md-8">
+                        <label for="subject_id" class="form-label">Subject</label>
+                        <select class="form-select" id="subject_id" name="subject_id" required onchange="this.form.submit()">
+                            <option value="" {% if not selected_subject %}selected{% endif %}>Select a subject...</option>
+                            {% for subject in subjects %}
+                                <option value="{{ subject.id }}" {% if selected_subject == subject.id %}selected{% endif %}>
+                                    {{ subject.name }} ({{ subject.semester }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter me-2"></i>Filter
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if selected_subject %}
+        <!-- Attendance Management -->
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Attendance Records</h5>
+                <button class="btn btn-sm btn-light" id="saveAllBtn">
+                    <i class="fas fa-save me-2"></i>Save All Changes
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover attendance-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="align-middle text-center" rowspan="2">Student</th>
+                                <th class="text-center" colspan="16">Week</th>
+                                <th class="align-middle text-center" rowspan="2">Present</th>
+                                <th class="align-middle text-center" rowspan="2">Excused</th>
+                                <th class="align-middle text-center" rowspan="2">Total %</th>
+                            </tr>
+                            <tr>
+                                {% for week in range(1, 17) %}
+                                    <th class="text-center">{{ week }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                                <tr data-student-id="{{ student.id }}">
+                                    <td>{{ student.name }}</td>
+                                    {% for week in range(1, 17) %}
+                                        <td class="text-center attendance-cell" data-week="{{ week }}">
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <input type="radio" class="btn-check attendance-radio" name="attendance_{{ student.id }}_{{ week }}" 
+                                                       id="present_{{ student.id }}_{{ week }}" value="present" autocomplete="off"
+                                                       data-student-id="{{ student.id }}" data-subject-id="{{ selected_subject }}"
+                                                       data-week="{{ week }}" data-status="present">
+                                                <label class="btn btn-outline-success" for="present_{{ student.id }}_{{ week }}" 
+                                                       title="Present">P</label>
+                                                
+                                                <input type="radio" class="btn-check attendance-radio" name="attendance_{{ student.id }}_{{ week }}" 
+                                                       id="absent_{{ student.id }}_{{ week }}" value="absent" autocomplete="off"
+                                                       data-student-id="{{ student.id }}" data-subject-id="{{ selected_subject }}"
+                                                       data-week="{{ week }}" data-status="absent">
+                                                <label class="btn btn-outline-danger" for="absent_{{ student.id }}_{{ week }}" 
+                                                       title="Absent">A</label>
+                                                
+                                                <input type="radio" class="btn-check attendance-radio" name="attendance_{{ student.id }}_{{ week }}" 
+                                                       id="excused_{{ student.id }}_{{ week }}" value="excused" autocomplete="off"
+                                                       data-student-id="{{ student.id }}" data-subject-id="{{ selected_subject }}"
+                                                       data-week="{{ week }}" data-status="excused">
+                                                <label class="btn btn-outline-warning" for="excused_{{ student.id }}_{{ week }}" 
+                                                       title="Excused">E</label>
+                                                <div class="attendance-status mt-1"></div>
+                                            </div>
+                                        </td>
+                                    {% endfor %}
+                                    <td class="text-center present-count">0</td>
+                                    <td class="text-center excused-count">0</td>
+                                    <td class="text-center attendance-total">0%</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const selectedSubject = '{{ selected_subject }}';
+                
+                // Load existing attendance data as JSON
+                const attendanceData = JSON.parse('{{ attendance|tojson|safe }}');
+                
+                // Process attendance data
+                console.log('Loading attendance data:', attendanceData);
+                
+                // First, clear any previously checked radio buttons
+                document.querySelectorAll('.attendance-radio:checked').forEach(radio => {
+                    radio.checked = false;
+                });
+                
+                // Create a map to organize attendance records by student and lecture
+                const attendanceMap = {};
+                
+                // Process each attendance record and store the latest one for each student/lecture combination
+                attendanceData.forEach(function(record) {
+                    if (!record.student_id || !record.lecture_number) return;
+                    
+                    const key = `${record.student_id}_${record.lecture_number}`;
+                    
+                    // If we haven't seen this combination before, or this record is newer
+                    if (!attendanceMap[key] || 
+                        (record.updated_at && (!attendanceMap[key].updated_at || 
+                         new Date(record.updated_at) > new Date(attendanceMap[key].updated_at)))) {
+                        attendanceMap[key] = record;
+                    }
+                });
+                
+                // Now process the deduplicated records
+                Object.values(attendanceMap).forEach(function(record) {
+                    // Convert lecture_number to number if it's a string
+                    let lectureNum = record.lecture_number;
+                    if (typeof lectureNum === 'string') {
+                        lectureNum = parseInt(lectureNum);
+                    }
+                    
+                    if (lectureNum >= 1 && lectureNum <= 16) {
+                        // Determine which radio button should be checked
+                        var radioId = record.is_excused ? 
+                            "excused_" + record.student_id + "_" + lectureNum : 
+                            (record.is_present ? "present_" + record.student_id + "_" + lectureNum : 
+                             "absent_" + record.student_id + "_" + lectureNum);
+                        
+                        console.log('Setting radio button:', radioId, 'for student:', record.student_id, 'lecture:', lectureNum, 'present:', record.is_present, 'excused:', record.is_excused);
+                        var radio = document.getElementById(radioId);
+                        if (radio) {
+                            radio.checked = true;
+                            // Update the row totals when loading data
+                            var row = radio.closest('tr');
+                            if (row) {
+                                setTimeout(function() {
+                                    calculateRowTotals(row);
+                                }, 100);
+                            }
+                        } else {
+                            console.warn('Radio button not found:', radioId);
+                        }
+                    }
+                });
+                
+                // Calculate all totals after all attendance data is loaded
+                setTimeout(function() {
+                    calculateAllTotals();
+                    console.log('All attendance totals calculated');
+                }, 500);
+                
+                // Add event listeners for radio buttons
+                const radioButtons = document.querySelectorAll('.attendance-radio');
+                radioButtons.forEach(radio => {
+                    radio.addEventListener('change', function() {
+                        // Get data directly from the radio button's data attributes
+                        const studentId = this.dataset.studentId;
+                        const subjectId = this.dataset.subjectId;
+                        const week = parseInt(this.dataset.week);
+                        const status = this.dataset.status;
+                        const isPresent = status === 'present';
+                        const isExcused = status === 'excused';
+                        
+                        // Log the data for debugging
+                        console.log(`Radio changed: Student ${studentId}, Subject ${subjectId}, Week ${week}, Status ${status}`);
+                        
+                        // Save the attendance change
+                        saveAttendance(studentId, subjectId, week, isPresent, isExcused);
+                        
+                        // Update the row totals
+                        const row = this.closest('tr');
+                        calculateRowTotals(row);
+                    });
+                });
+                
+                // Add event listener for Save All Changes button
+                const saveAllBtn = document.getElementById('saveAllBtn');
+                if (saveAllBtn) {
+                    saveAllBtn.addEventListener('click', function() {
+                        saveAllAttendance(selectedSubject);
+                    });
+                }
+            });
+            
+            function calculateRowTotals(row) {
+                let presentCount = 0;
+                let absentCount = 0;
+                let excusedCount = 0;
+                
+                const cells = row.querySelectorAll('.attendance-cell');
+                cells.forEach(cell => {
+                    const checkedRadio = cell.querySelector('input:checked');
+                    if (checkedRadio) {
+                        if (checkedRadio.value === 'present') {
+                            presentCount++;
+                        } else if (checkedRadio.value === 'absent') {
+                            absentCount++;
+                        } else if (checkedRadio.value === 'excused') {
+                            excusedCount++;
+                        }
+                    } else {
+                        // Default to absent if nothing is checked
+                        absentCount++;
+                    }
+                });
+                
+                const totalClasses = cells.length;
+                const attendanceRate = totalClasses > 0 ? Math.round(((presentCount + excusedCount) / totalClasses) * 100) : 0;
+                
+                // Update the totals in the row
+                row.querySelector('.present-count').textContent = presentCount;
+                row.querySelector('.absent-count').textContent = absentCount;
+                row.querySelector('.excused-count').textContent = excusedCount;
+                row.querySelector('.attendance-total').textContent = `${attendanceRate}%`;
+            }
+            
+            function calculateAllTotals() {
+                // Update totals for all rows
+                const rows = document.querySelectorAll('tr[data-student-id]');
+                rows.forEach(row => calculateRowTotals(row));
+            }
+            
+            function saveAttendance(studentId, subjectId, week, isPresent, isExcused) {
+                // Convert boolean values to strings for the server
+                const isPresVal = isPresent ? 'true' : 'false';
+                const isExcVal = isExcused ? 'true' : 'false';
+                
+                // Validate inputs
+                if (!studentId || !subjectId || week === undefined || week === null) {
+                    console.error('Missing required parameters for attendance');
+                    return;
+                }
+                
+                // Log the values being sent to help with debugging
+                console.log(`Saving attendance: Student ${studentId}, Subject ${subjectId}, Week ${week}, Present: ${isPresVal}, Excused: ${isExcVal}`);
+                
+                // Show saving indicator for this cell
+                const row = document.querySelector(`tr[data-student-id="${studentId}"]`);
+                if (row) {
+                    const cell = row.querySelector(`.attendance-cell[data-week="${week}"]`);
+                    if (cell) {
+                        const statusDiv = document.createElement('div');
+                        statusDiv.className = 'attendance-status';
+                        statusDiv.innerHTML = '<div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Saving...</span></div>';
+                        cell.appendChild(statusDiv);
+                    }
+                }
+                
+                fetch('{{ url_for("admin_bp.update_attendance") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        'student_id': studentId,
+                        'subject_id': subjectId,
+                        'lecture_number': week,
+                        'is_present': isPresVal,
+                        'is_excused': isExcVal
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Find the attendance status div for this cell
+                    const row = document.querySelector(`tr[data-student-id="${studentId}"]`);
+                    if (row) {
+                        const cell = row.querySelector(`.attendance-cell[data-week="${week}"]`);
+                        if (cell) {
+                            const statusDiv = cell.querySelector('.attendance-status');
+                            if (statusDiv) {
+                                // Remove any existing spinner
+                                statusDiv.innerHTML = '';
+                                
+                                if (data.success) {
+                                    // Show success icon
+                                    statusDiv.innerHTML = '<i class="fas fa-check-circle text-success" title="Saved"></i>';
+                                    setTimeout(() => {
+                                        statusDiv.innerHTML = '';
+                                    }, 3000);
+                                } else {
+                                    // Show error icon
+                                    statusDiv.innerHTML = '<i class="fas fa-exclamation-circle text-danger" title="Error saving"></i>';
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (data.success) {
+                        // Show a small toast or notification
+                        const toast = document.createElement('div');
+                        toast.className = 'position-fixed bottom-0 end-0 p-3';
+                        toast.style.zIndex = '5';
+                        toast.id = `toast-${Date.now()}`; // Unique ID to manage multiple toasts
+                        
+                        // Create toast with student and attendance info
+                        const studentName = document.querySelector(`tr[data-student-id="${studentId}"] td:first-child`).textContent.trim();
+                        const status = isPresent ? 'Present' : (isExcused ? 'Excused' : 'Absent');
+                        
+                        toast.innerHTML = `
+                            <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                                <div class="d-flex">
+                                    <div class="toast-body">
+                                        Saved: ${studentName} marked as ${status} for Week ${week}
+                                    </div>
+                                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                </div>
+                            </div>
+                        `;
+                        document.body.appendChild(toast);
+                        
+                        // Initialize and show the toast
+                        const toastEl = toast.querySelector('.toast');
+                        const bsToast = new bootstrap.Toast(toastEl, {
+                            autohide: true,
+                            delay: 3000
+                        });
+                        bsToast.show();
+                        
+                        // Remove the toast element after it's hidden
+                        toastEl.addEventListener('hidden.bs.toast', function() {
+                            setTimeout(() => toast.remove(), 500);
+                        });
+                    }
+                })
+                .catch(error => console.error('Error saving attendance:', error));
+            }
+            
+            function saveAllAttendance(subjectId) {
+                const rows = document.querySelectorAll('tr[data-student-id]');
+                let savedCount = 0;
+                let totalToSave = 0;
+                
+                // Create a progress indicator
+                const progressContainer = document.createElement('div');
+                progressContainer.className = 'position-fixed top-50 start-50 translate-middle bg-white p-4 rounded shadow-lg';
+                progressContainer.style.zIndex = '1050';
+                progressContainer.innerHTML = `
+                    <div class="text-center mb-3">
+                        <h5>Saving Attendance Records</h5>
+                        <div class="progress mt-3" style="height: 20px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                role="progressbar" style="width: 0%" id="save-progress-bar">
+                                0%
+                            </div>
+                        </div>
+                        <div class="mt-2" id="save-progress-text">Preparing to save...</div>
+                    </div>
+                `;
+                document.body.appendChild(progressContainer);
+                
+                // Count total records to save
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('.attendance-cell input:checked');
+                    totalToSave += cells.length;
+                });
+                
+                if (totalToSave === 0) {
+                    progressContainer.remove();
+                    alert('No attendance records to save.');
+                    return;
+                }
+                
+                // Update progress text
+                const progressText = document.getElementById('save-progress-text');
+                progressText.textContent = `Saving 0 of ${totalToSave} records...`;
+                
+                // Process each row
+                rows.forEach(row => {
+                    const studentId = row.dataset.studentId;
+                    const cells = row.querySelectorAll('.attendance-cell');
+                    
+                    cells.forEach(cell => {
+                        const week = parseInt(cell.dataset.week);
+                        const checkedRadio = cell.querySelector('input:checked');
+                        
+                        if (checkedRadio) {
+                            const isPresent = checkedRadio.value === 'present';
+                            const isExcused = checkedRadio.value === 'excused';
+                            const isPresVal = isPresent ? 'true' : 'false';
+                            const isExcVal = isExcused ? 'true' : 'false';
+                            
+                            fetch('{{ url_for("admin_bp.update_attendance") }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                },
+                                body: new URLSearchParams({
+                                    'student_id': studentId,
+                                    'subject_id': subjectId,
+                                    'lecture_number': week,
+                                    'is_present': isPresVal,
+                                    'is_excused': isExcVal
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    savedCount++;
+                                    
+                                    // Update progress
+                                    const progressBar = document.getElementById('save-progress-bar');
+                                    const percentage = Math.round((savedCount / totalToSave) * 100);
+                                    progressBar.style.width = `${percentage}%`;
+                                    progressBar.textContent = `${percentage}%`;
+                                    progressText.textContent = `Saving ${savedCount} of ${totalToSave} records...`;
+                                    
+                                    // When all records are saved
+                                    if (savedCount === totalToSave) {
+                                        progressText.textContent = 'All records saved successfully!';
+                                        progressBar.classList.remove('progress-bar-animated');
+                                        
+                                        // Remove the progress indicator after a delay
+                                        setTimeout(() => {
+                                            progressContainer.remove();
+                                            
+                                            // Show success toast
+                                            const toast = document.createElement('div');
+                                            toast.className = 'position-fixed bottom-0 end-0 p-3';
+                                            toast.style.zIndex = '5';
+                                            toast.innerHTML = `
+                                                <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                                                    <div class="d-flex">
+                                                        <div class="toast-body">
+                                                            All ${totalToSave} attendance records saved successfully!
+                                                        </div>
+                                                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                                    </div>
+                                                </div>
+                                            `;
+                                            document.body.appendChild(toast);
+                                            
+                                            const toastEl = toast.querySelector('.toast');
+                                            const bsToast = new bootstrap.Toast(toastEl, { autohide: true, delay: 5000 });
+                                            bsToast.show();
+                                            
+                                            toastEl.addEventListener('hidden.bs.toast', function() {
+                                                setTimeout(() => toast.remove(), 500);
+                                            });
+                                            
+                                            // Update row totals
+                                            rows.forEach(row => calculateRowTotals(row));
+                                        }, 1500);
+                                    }
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error saving attendance:', error);
+                                savedCount++; // Still increment to complete the progress
+                                
+                                // Update progress text to show error
+                                progressText.textContent = `Error saving some records. ${savedCount} of ${totalToSave} processed.`;
+                                
+                                if (savedCount === totalToSave) {
+                                    setTimeout(() => progressContainer.remove(), 3000);
+                                }
+                            });
+                        }
+                    });
+                });
+            }
+        </script>
+    {% else %}
+        <div class="alert alert-info">
+            <h4 class="alert-heading">Select a Subject</h4>
+            <p>Please select a subject from the dropdown above to manage attendance records.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

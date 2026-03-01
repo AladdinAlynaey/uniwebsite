@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% block title %}My Attendance{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Simple horizontal scroll for attendance table */
+    .table-responsive {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        display: block;
+        width: 100%;
+    }
+    
+    .table-responsive::-webkit-scrollbar {
+        height: 12px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-track {
+        background: var(--bg-tertiary);
+        border-radius: 6px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 6px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-thumb:hover {
+        background: var(--primary-dark);
+    }
+    
+    .table-bordered {
+        margin-bottom: 0;
+        white-space: nowrap;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>My Attendance</h1>
+        <a href="{{ url_for('student_bp.dashboard') }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+
+    {% if subjects %}
+
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Detailed Attendance Records</h5>
+            </div>
+            <div class="card-body">
+                <div class="accordion" id="attendanceAccordion">
+                    {% for subject in subjects %}
+                        {% set attendance_records = attendance_by_subject.get(subject.id, []) %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading{{ subject.id }}">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                        data-bs-target="#collapse{{ subject.id }}" aria-expanded="false" 
+                                        aria-controls="collapse{{ subject.id }}">
+                                    {{ subject.name }} ({{ subject.semester }})
+                                </button>
+                            </h2>
+                            <div id="collapse{{ subject.id }}" class="accordion-collapse collapse" 
+                                 aria-labelledby="heading{{ subject.id }}" data-bs-parent="#attendanceAccordion">
+                                <div class="accordion-body">
+                                    {% if attendance_records %}
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-bordered">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th class="text-center align-middle" rowspan="2">Subject</th>
+                                                        <th class="text-center" colspan="16">Week</th>
+                                                        <th class="text-center align-middle" rowspan="2">Excused</th>
+                                                        <th class="text-center align-middle" rowspan="2">Total %</th>
+                                                    </tr>
+                                                    <tr>
+                                                        {% for week in range(1, 17) %}
+                                                            <th class="text-center">{{ week }}</th>
+                                                        {% endfor %}
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>{{ subject.name }}</td>
+                                                        
+                                                        {# Create a dictionary to store the latest attendance record for each week #}
+                                                        {% set latest_records = {} %}
+                                                        {% for record in attendance_records %}
+                                                            {% set week_key = record.lecture_number|string %}
+                                                            {% if week_key not in latest_records or 
+                                                                  (record.updated_at and (latest_records[week_key].updated_at is not defined or 
+                                                                   record.updated_at > latest_records[week_key].updated_at)) %}
+                                                                {% set _ = latest_records.update({week_key: record}) %}
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                        
+                                                        {% for week in range(1, 17) %}
+                                                            {% set week_str = week|string %}
+                                                            {% set record = latest_records.get(week_str) %}
+                                                            
+                                                            <td class="text-center">
+                                                                {% if record %}
+                                                                    {% if record.is_present is defined and record.is_present %}
+                                                                        <span class="badge bg-success" title="Present">P</span>
+                                                                    {% elif record.is_excused is defined and record.is_excused %}
+                                                                        <span class="badge bg-warning text-dark" title="Excused">E</span>
+                                                                    {% else %}
+                                                                        <span class="badge bg-danger" title="Absent">A</span>
+                                                                    {% endif %}
+                                                                {% else %}
+                                                                    <span class="badge bg-secondary" title="No Data">-</span>
+                                                                {% endif %}
+                                                            </td>
+                                                        {% endfor %}
+                                                        
+                                                        {% set excused_count = 0 %}
+                                                        {% set present_count = 0 %}
+                                                        {% set total_count = 0 %}
+                                                        
+                                                        {# Calculate attendance statistics using only the latest records #}
+                                                        {% for record in latest_records.values() %}
+                                                            {% set total_count = total_count + 1 %}
+                                                            {% if record.is_excused is defined and record.is_excused %}
+                                                                {% set excused_count = excused_count + 1 %}
+                                                            {% endif %}
+                                                            {% if record.is_present is defined and record.is_present %}
+                                                                {% set present_count = present_count + 1 %}
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                        
+                                                        {% set attendance_percentage = 0 %}
+                                                        {% if total_count > 0 %}
+                                                            {% set attendance_percentage = ((present_count + excused_count) / total_count * 100)|round %}
+                                                        {% endif %}
+                                                        
+                                                        <td class="text-center">{{ excused_count }}</td>
+                                                        
+                                                        <td class="text-center">
+                                                            {% if total_count > 0 %}
+                                                                {{ "%.1f"|format((present_count + excused_count) / total_count * 100) }}%
+                                                            {% else %}
+                                                                0%
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {% else %}
+                                        <p class="text-muted">No attendance records available for this subject.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <h4 class="alert-heading">No Subjects Available</h4>
+            <p>There are currently no subjects with attendance records available. Please check back later.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

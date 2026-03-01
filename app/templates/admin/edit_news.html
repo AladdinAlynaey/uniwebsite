@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit News{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Edit News</h1>
+        <a href="{{ url_for('admin_bp.news') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to News
+        </a>
+    </div>
+    
+    <!-- Edit News Form -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Edit News Item</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin_bp.edit_news', news_id=news.id) }}">
+                <div class="mb-3">
+                    <label for="title" class="form-label">Title</label>
+                    <input type="text" class="form-control" id="title" name="title" value="{{ news.title }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="content" class="form-label">Content</label>
+                    <textarea class="form-control" id="content" name="content" rows="10" required>{{ news.content }}</textarea>
+                    <div class="form-text">You can use Markdown formatting for rich text.</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Created</label>
+                    <p class="form-control-plaintext">{{ news.created_at }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Last Updated</label>
+                    <p class="form-control-plaintext">{{ news.updated_at }}</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Save Changes
+                    </button>
+                    <a href="{{ url_for('admin_bp.news') }}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Preview Card -->
+    <div class="card shadow-sm border-0 mt-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Preview</h5>
+        </div>
+        <div class="card-body">
+            <h3 id="previewTitle">{{ news.title }}</h3>
+            <p class="text-muted">
+                <small>
+                    <i class="fas fa-calendar me-1"></i>{{ news.created_at[:10] if news.created_at else 'N/A' }}
+                    {% if news.updated_at and news.updated_at != news.created_at %}
+                        <span class="ms-2">
+                            <i class="fas fa-edit me-1"></i>Updated: {{ news.updated_at[:10] }}
+                        </span>
+                    {% endif %}
+                </small>
+            </p>
+            <hr>
+            <div id="previewContent">{{ news.content }}</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Live preview functionality
+    const titleInput = document.getElementById('title');
+    const contentInput = document.getElementById('content');
+    const previewTitle = document.getElementById('previewTitle');
+    const previewContent = document.getElementById('previewContent');
+    
+    titleInput.addEventListener('input', function() {
+        previewTitle.textContent = this.value;
+    });
+    
+    contentInput.addEventListener('input', function() {
+        previewContent.textContent = this.value;
+    });
+</script>
+{% endblock %} 

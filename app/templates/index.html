@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+
+{% block title %}Home - University AI Batch{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-particles"></div>
+    <div class="container">
+        <div class="row align-items-center justify-content-center">
+            <div class="col-lg-10 col-xl-9 text-center">
+                <div class="hero-badge mb-4">
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    <span>Welcome to University AI Batch</span>
+                </div>
+                <h1 class="hero-title mb-4">
+                    Transform Your <span class="gradient-text">Educational</span> Experience
+                </h1>
+                <p class="hero-description mb-5">
+                    A complete educational platform with role-based access control, Telegram bot integration, 
+                    and an intelligent AI chatbot. Built by <strong>AI Eng. Alaadin</strong> to revolutionize learning.
+                </p>
+                <div class="hero-buttons d-flex flex-wrap gap-3 justify-content-center mb-4">
+                    {% if session.get('student_token') %}
+                        <a href="{{ url_for('student_bp.dashboard') }}" class="btn btn-hero-primary btn-lg">
+                            <i class="fas fa-tachometer-alt me-2"></i>
+                            <span>Go to Dashboard</span>
+                        </a>
+                    {% elif session.get('is_admin') %}
+                        <a href="{{ url_for('admin_bp.dashboard') }}" class="btn btn-hero-primary btn-lg">
+                            <i class="fas fa-tachometer-alt me-2"></i>
+                            <span>Go to Admin Dashboard</span>
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('main_bp.student_login') }}" class="btn btn-hero-primary btn-lg">
+                            <i class="fas fa-user-graduate me-2"></i>
+                            <span>Student Login</span>
+                        </a>
+                        <a href="{{ url_for('main_bp.login') }}" class="btn btn-hero-secondary btn-lg">
+                            <i class="fas fa-user-shield me-2"></i>
+                            <span>Admin Login</span>
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="hero-features">
+                    <div class="hero-feature-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Secure</span>
+                    </div>
+                    <div class="hero-feature-item">
+                        <i class="fas fa-bolt"></i>
+                        <span>Fast</span>
+                    </div>
+                    <div class="hero-feature-item">
+                        <i class="fas fa-brain"></i>
+                        <span>AI-Powered</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Counter -->
+<section class="stats-section py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6 col-6">
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper">
+                        <div class="stat-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                    </div>
+                    <div class="stat-number" data-count="{{ subjects_count }}">0</div>
+                    <div class="stat-label">Subjects</div>
+                    <div class="stat-bar"></div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-6">
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper">
+                        <div class="stat-icon stat-icon-success">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                        </div>
+                    </div>
+                    <div class="stat-number" data-count="{{ lectures_count }}">0</div>
+                    <div class="stat-label">Lectures</div>
+                    <div class="stat-bar stat-bar-success"></div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-6">
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper">
+                        <div class="stat-icon stat-icon-info">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                    </div>
+                    <div class="stat-number" data-count="{{ students_count }}">0</div>
+                    <div class="stat-label">Students</div>
+                    <div class="stat-bar stat-bar-info"></div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-6">
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper">
+                        <div class="stat-icon stat-icon-warning">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                    </div>
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">AI Support</div>
+                    <div class="stat-bar stat-bar-warning"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section py-5">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <span class="section-badge">
+                <i class="fas fa-star me-2"></i>Features
+            </span>
+            <h2 class="section-title mt-3 mb-3">Everything You Need to Succeed</h2>
+            <p class="section-description">Powerful tools and features designed for modern education</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-box">
+                    <div class="feature-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <h3>Lectures & Materials</h3>
+                    <p>Access all your lecture materials organized by subject and week. Download resources and stay up to date with your studies.</p>
+                    <a href="{{ url_for('main_bp.subjects') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-right"></i>Browse Subjects
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-box">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Grades & Attendance</h3>
+                    <p>Track your academic progress and attendance records. Get insights into your performance and identify areas for improvement.</p>
+                    {% if session.get('student_token') %}
+                        <a href="{{ url_for('student_bp.grades') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-chart-bar"></i>View Grades
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('main_bp.student_login') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-sign-in-alt"></i>Login to View
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-box">
+                    <div class="feature-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3>AI Chatbot</h3>
+                    <p>Get instant answers about subjects, lectures, and university news from our intelligent AI chatbot powered by Gemini API.</p>
+                    <a href="{{ url_for('main_bp.chatbot') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-comments"></i>Chat with AI
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-box">
+                    <div class="feature-icon">
+                        <i class="fab fa-telegram"></i>
+                    </div>
+                    <h3>Telegram Integration</h3>
+                    <p>Receive notifications about new lectures, grades, and announcements directly on your phone through our Telegram bot.</p>
+                    <a href="https://t.me/AIDSStudentAssistantBot" class="btn btn-outline-primary" target="_blank">
+                        <i class="fab fa-telegram"></i>Join Bot
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-box">
+                    <div class="feature-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3>Feedback System</h3>
+                    <p>Submit feedback about lectures and courses. Your input helps us improve the educational experience for everyone.</p>
+                    {% if session.get('student_token') %}
+                        <a href="{{ url_for('student_bp.feedback') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-paper-plane"></i>Submit Feedback
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('main_bp.student_login') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-sign-in-alt"></i>Login to Submit
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-box">
+                    <div class="feature-icon">
+                        <i class="fas fa-newspaper"></i>
+                    </div>
+                    <h3>Latest News</h3>
+                    <p>Stay updated with the latest university news, announcements, and events. Never miss important information again.</p>
+                    <a href="{{ url_for('main_bp.news') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-newspaper"></i>View News
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- Latest News Section -->
+<section class="news-section py-5">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <span class="section-badge">
+                <i class="fas fa-newspaper me-2"></i>News
+            </span>
+            <h2 class="section-title mt-3 mb-3">Latest Updates & Announcements</h2>
+            <p class="section-description">Stay informed with the latest news and events</p>
+        </div>
+        
+        <div class="row g-4">
+            {% if news %}
+                {% for item in news %}
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-start">
+                                <h5 class="mb-0 flex-grow-1">{{ item.title }}</h5>
+                                <span class="badge bg-primary ms-2">{{ item.created_at[:10] }}</span>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-0">{{ item.content[:100] }}{% if item.content|length > 100 %}...{% endif %}</p>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <a href="{{ url_for('main_bp.news_detail', news_id=item.id) }}" class="btn btn-outline-primary w-100">
+                                    <i class="fas fa-arrow-right"></i>Read More
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info d-flex align-items-center">
+                        <i class="fas fa-info-circle me-3 fs-4"></i>
+                        <span>No news available at the moment.</span>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section animate-on-scroll">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h2 class="mb-3">Ready to Enhance Your Learning Experience?</h2>
+                <p class="lead mb-4">Join University AI Batch today and transform the way you learn.</p>
+                <div class="d-flex flex-wrap gap-3 justify-content-center">
+                    {% if not session.get('student_token') and not session.get('is_admin') %}
+                        <a href="{{ url_for('main_bp.student_login') }}" class="btn btn-light btn-lg">
+                            <i class="fas fa-user-graduate"></i>Student Login
+                        </a>
+                        <a href="{{ url_for('main_bp.chatbot') }}" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-robot"></i>Try AI Chatbot
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('main_bp.subjects') }}" class="btn btn-light btn-lg">
+                            <i class="fas fa-book"></i>Browse Subjects
+                        </a>
+                        <a href="{{ url_for('main_bp.chatbot') }}" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-robot"></i>AI Chatbot
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %} 

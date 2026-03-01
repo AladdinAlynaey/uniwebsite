@@ -1,0 +1,642 @@
+{% extends 'base.html' %}
+
+{% block title %}My Tasks{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Tasks page styling */
+    .task-card {
+        border-left: 4px solid var(--primary);
+        transition: all 0.3s ease;
+    }
+
+    .task-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .task-card.overdue {
+        border-left-color: var(--danger);
+    }
+
+    .task-card.completed {
+        border-left-color: var(--success);
+    }
+
+    .status-badge {
+        font-size: 0.875rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 20px;
+    }
+
+    .file-upload-area {
+        border: 2px dashed var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .file-upload-area:hover {
+        border-color: var(--primary);
+        background: var(--bg-tertiary);
+    }
+
+    .file-upload-area.dragover {
+        border-color: var(--primary);
+        background: var(--bg-tertiary);
+    }
+
+    .file-list-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem;
+        background: var(--bg-secondary);
+        border-radius: var(--radius-md);
+        margin-bottom: 0.5rem;
+    }
+
+    .progress-ring {
+        width: 60px;
+        height: 60px;
+    }
+
+    .tab-content {
+        padding-top: 1.5rem;
+    }
+
+    /* Dark mode fixes */
+    [data-theme="dark"] .file-upload-area {
+        background: var(--bg-secondary);
+    }
+
+    [data-theme="dark"] .file-list-item {
+        background: var(--bg-tertiary);
+    }
+
+    [data-theme="dark"] .modal-content {
+        background: var(--bg-primary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    [data-theme="dark"] .modal-header {
+        border-bottom-color: var(--border-color) !important;
+    }
+
+    [data-theme="dark"] .modal-footer {
+        border-top-color: var(--border-color) !important;
+    }
+
+    [data-theme="dark"] .modal-title {
+        color: var(--text-primary) !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="fas fa-tasks me-2"></i>My Tasks</h1>
+            <p class="text-muted mb-0">Manage your assignments and projects</p>
+        </div>
+        <a href="{{ url_for('student_bp.dashboard') }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-primary mb-0">{{ stats.total }}</h3>
+                    <small class="text-muted">Total Tasks</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-warning mb-0">{{ stats.in_progress }}</h3>
+                    <small class="text-muted">In Progress</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-success mb-0">{{ stats.completed }}</h3>
+                    <small class="text-muted">Completed</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-danger mb-0">{{ stats.overdue }}</h3>
+                    <small class="text-muted">Overdue</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-4" id="tasksTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="homework-tab" data-bs-toggle="tab" data-bs-target="#homework"
+                type="button" role="tab">
+                <i class="fas fa-book me-2"></i>Weekly Homework
+                <span class="badge bg-primary ms-2">{{ homework_count }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="projects-tab" data-bs-toggle="tab" data-bs-target="#projects" type="button"
+                role="tab">
+                <i class="fas fa-project-diagram me-2"></i>Final Projects
+                <span class="badge bg-success ms-2">{{ projects_count }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="presentations-tab" data-bs-toggle="tab" data-bs-target="#presentations"
+                type="button" role="tab">
+                <i class="fas fa-chalkboard-teacher me-2"></i>Presentations
+                <span class="badge bg-info ms-2">{{ presentations_count }}</span>
+            </button>
+        </li>
+    </ul>
+
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="tasksTabContent">
+        <!-- Weekly Homework Tab -->
+        <div class="tab-pane fade show active" id="homework" role="tabpanel">
+            {% if homework_by_subject %}
+            {% for subject_id, subject_data in homework_by_subject.items() %}
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-graduation-cap me-2"></i>{{ subject_data.subject_name }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="accordion{{ subject_id }}">
+                        {% for week, homework in subject_data.weeks.items() %}
+                        <div
+                            class="accordion-item task-card {% if homework.is_overdue %}overdue{% elif homework.status == 'done' or homework.status == 'graded' %}completed{% endif %}">
+                            <h2 class="accordion-header" id="heading{{ homework.id }}">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapse{{ homework.id }}">
+                                    <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                                        <div>
+                                            <strong>Week {{ week }}: {{ homework.title }}</strong>
+                                            <br>
+                                            <small class="text-muted">
+                                                <i class="far fa-calendar me-1"></i>Due: {{ homework.due_date }}
+                                            </small>
+                                        </div>
+                                        <div>
+                                            {% if homework.status == 'not_started' or not homework.status %}
+                                            <span class="badge bg-secondary status-badge">Not Started</span>
+                                            {% elif homework.status == 'in_progress' %}
+                                            <span class="badge bg-warning status-badge">In Progress</span>
+                                            {% elif homework.status == 'done' %}
+                                            <span class="badge bg-success status-badge">Submitted</span>
+                                            {% elif homework.status == 'graded' %}
+                                            <span class="badge bg-primary status-badge">Graded: {{ homework.grade
+                                                }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="collapse{{ homework.id }}" class="accordion-collapse collapse"
+                                data-bs-parent="#accordion{{ subject_id }}">
+                                <div class="accordion-body">
+                                    <p>{{ homework.description }}</p>
+
+                                    <!-- Submitted Files -->
+                                    {% if homework.files %}
+                                    <div class="mb-3">
+                                        <h6><i class="fas fa-paperclip me-2"></i>Submitted Files:</h6>
+                                        {% for file in homework.files %}
+                                        <div class="file-list-item">
+                                            <div>
+                                                <i class="fas {{ file.icon }} me-2"></i>
+                                                <strong>{{ file.filename }}</strong>
+                                                <small class="text-muted ms-2">({{ file.size_formatted }})</small>
+                                            </div>
+                                            <a href="{{ url_for('student_bp.download_submission', filepath=file.relative_path) }}"
+                                                class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Grade and Feedback -->
+                                    {% if homework.status == 'graded' %}
+                                    <div class="alert alert-info">
+                                        <h6><i class="fas fa-star me-2"></i>Grade: {{ homework.grade }}/100</h6>
+                                        {% if homework.feedback %}
+                                        <p class="mb-0"><strong>Feedback:</strong> {{ homework.feedback }}</p>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Actions -->
+                                    {% if homework.status != 'graded' %}
+                                    <div class="d-flex gap-2">
+                                        {% if not homework.status or homework.status == 'not_started' %}
+                                        <button class="btn btn-warning"
+                                            onclick="updateStatus('{{ homework.id }}', 'in_progress', 'weekly_homework')">
+                                            <i class="fas fa-play me-2"></i>Start Working
+                                        </button>
+                                        {% endif %}
+
+                                        {% if homework.status == 'in_progress' or homework.status == 'done' %}
+                                        <a href="{{ url_for('student_bp.upload_assignment_page', assignment_id=homework.id, type='weekly_homework') }}"
+                                            class="btn btn-primary">
+                                            <i class="fas fa-upload me-2"></i>Upload Files
+                                        </a>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Upload Modal -->
+                                    <div class="modal fade" id="uploadModal{{ homework.id }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Upload Assignment Files</h5>
+                                                    <button type="button" class="btn-close"
+                                                        data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form method="POST"
+                                                    action="{{ url_for('student_bp.submit_assignment') }}"
+                                                    enctype="multipart/form-data">
+                                                    <div class="modal-body">
+                                                        <input type="hidden" name="assignment_id"
+                                                            value="{{ homework.id }}">
+                                                        <input type="hidden" name="assignment_type"
+                                                            value="weekly_homework">
+
+                                                        <div class="file-upload-area"
+                                                            onclick="document.getElementById('file{{ homework.id }}').click()">
+                                                            <i
+                                                                class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                                            <p>Click to select files or drag and drop</p>
+                                                            <small class="text-muted">Max 5MB total (PDF, DOCX, ZIP,
+                                                                Images, Code)</small>
+                                                        </div>
+                                                        <input type="file" id="file{{ homework.id }}" name="files"
+                                                            multiple class="d-none"
+                                                            accept=".pdf,.docx,.doc,.zip,.jpg,.jpeg,.png,.txt,.py,.ipynb">
+
+                                                        <div id="fileList{{ homework.id }}" class="mt-3"></div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary"
+                                                            data-bs-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-success">
+                                                            <i class="fas fa-check me-2"></i>Submit Assignment
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>No homework assignments available yet.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Final Projects Tab -->
+        <div class="tab-pane fade" id="projects" role="tabpanel">
+            {% if final_projects %}
+            <div class="row">
+                {% for project in final_projects %}
+                <div class="col-md-6 mb-4">
+                    <div
+                        class="card task-card h-100 {% if project.is_overdue %}overdue{% elif project.status == 'done' or project.status == 'graded' %}completed{% endif %}">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">{{ project.subject_name }}</h5>
+                                {% if project.status == 'not_started' or not project.status %}
+                                <span class="badge bg-secondary status-badge">Not Started</span>
+                                {% elif project.status == 'in_progress' %}
+                                <span class="badge bg-warning status-badge">In Progress</span>
+                                {% elif project.status == 'done' %}
+                                <span class="badge bg-success status-badge">Submitted</span>
+                                {% elif project.status == 'graded' %}
+                                <span class="badge bg-primary status-badge">Graded: {{ project.grade }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h6>{{ project.title }}</h6>
+                            <p class="text-muted">{{ project.description }}</p>
+
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="far fa-calendar me-1"></i>Due: {{ project.due_date }}
+                                </small>
+                            </div>
+
+                            <!-- Submitted Files -->
+                            {% if project.files %}
+                            <div class="mb-3">
+                                <h6><i class="fas fa-paperclip me-2"></i>Submitted Files:</h6>
+                                {% for file in project.files %}
+                                <div class="file-list-item">
+                                    <div>
+                                        <i class="fas {{ file.icon }} me-2"></i>
+                                        <strong>{{ file.filename }}</strong>
+                                        <small class="text-muted ms-2">({{ file.size_formatted }})</small>
+                                    </div>
+                                    <a href="{{ url_for('student_bp.download_submission', filepath=file.relative_path) }}"
+                                        class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+                            <!-- Grade and Feedback -->
+                            {% if project.status == 'graded' %}
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-star me-2"></i>Grade: {{ project.grade }}/100</h6>
+                                {% if project.feedback %}
+                                <p class="mb-0"><strong>Feedback:</strong> {{ project.feedback }}</p>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+
+                            <!-- Actions -->
+                            {% if project.status != 'graded' %}
+                            <div class="d-flex gap-2">
+                                {% if not project.status or project.status == 'not_started' %}
+                                <button class="btn btn-warning"
+                                    onclick="updateStatus('{{ project.id }}', 'in_progress', 'final_projects')">
+                                    <i class="fas fa-play me-2"></i>Start Working
+                                </button>
+                                {% endif %}
+
+                                {% if project.status == 'in_progress' or project.status == 'done' %}
+                                <a href="{{ url_for('student_bp.upload_assignment_page', assignment_id=project.id, type='final_projects') }}"
+                                    class="btn btn-primary">
+                                    <i class="fas fa-upload me-2"></i>Upload Files
+                                </a>
+                                {% endif %}
+                            </div>
+
+                            <!-- Upload Modal -->
+                            <div class="modal fade" id="uploadModalProj{{ project.id }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Upload Project Files</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <form method="POST" action="{{ url_for('student_bp.submit_assignment') }}"
+                                            enctype="multipart/form-data">
+                                            <div class="modal-body">
+                                                <input type="hidden" name="assignment_id" value="{{ project.id }}">
+                                                <input type="hidden" name="assignment_type" value="final_projects">
+
+                                                <div class="file-upload-area"
+                                                    onclick="document.getElementById('fileProj{{ project.id }}').click()">
+                                                    <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                                    <p>Click to select files or drag and drop</p>
+                                                    <small class="text-muted">Max 5MB total (PDF, DOCX, ZIP, Images,
+                                                        Code)</small>
+                                                </div>
+                                                <input type="file" id="fileProj{{ project.id }}" name="files" multiple
+                                                    class="d-none"
+                                                    accept=".pdf,.docx,.doc,.zip,.jpg,.jpeg,.png,.txt,.py,.ipynb">
+
+                                                <div id="fileListProj{{ project.id }}" class="mt-3"></div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-success">
+                                                    <i class="fas fa-check me-2"></i>Submit Project
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>No final projects available yet.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Presentations Tab -->
+        <div class="tab-pane fade" id="presentations" role="tabpanel">
+            {% if presentations %}
+            <div class="row">
+                {% for pres in presentations %}
+                <div class="col-md-6 mb-4">
+                    <div
+                        class="card task-card h-100 {% if pres.is_overdue %}overdue{% elif pres.status == 'done' or pres.status == 'graded' %}completed{% endif %}">
+                        <div class="card-header bg-info text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="fas fa-chalkboard-teacher me-2"></i>{{ pres.subject_name }}
+                                </h5>
+                                {% if pres.status == 'not_started' or not pres.status %}
+                                <span class="badge bg-secondary status-badge">Not Started</span>
+                                {% elif pres.status == 'in_progress' %}
+                                <span class="badge bg-warning status-badge">In Progress</span>
+                                {% elif pres.status == 'done' %}
+                                <span class="badge bg-success status-badge">Submitted</span>
+                                {% elif pres.status == 'graded' %}
+                                <span class="badge bg-primary status-badge">Graded: {{ pres.grade }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h6>{{ pres.title }}</h6>
+                            <p class="text-muted">{{ pres.description }}</p>
+
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="far fa-calendar me-1"></i>Due: {{ pres.due_date }}
+                                </small>
+                                {% if pres.degree %}
+                                <small class="text-muted ms-3">
+                                    <i class="fas fa-star me-1"></i>Max Grade: {{ pres.degree }}
+                                </small>
+                                {% endif %}
+                            </div>
+
+                            <!-- Submitted Files -->
+                            {% if pres.files %}
+                            <div class="mb-3">
+                                <h6><i class="fas fa-paperclip me-2"></i>Submitted Files:</h6>
+                                {% for file in pres.files %}
+                                <div class="file-list-item">
+                                    <div>
+                                        <i class="fas {{ file.icon }} me-2"></i>
+                                        <strong>{{ file.filename }}</strong>
+                                        <small class="text-muted ms-2">({{ file.size_formatted }})</small>
+                                    </div>
+                                    <a href="{{ url_for('student_bp.download_submission', filepath=file.relative_path) }}"
+                                        class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+                            <!-- Grade and Feedback -->
+                            {% if pres.status == 'graded' %}
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-star me-2"></i>Grade: {{ pres.grade }}/{{ pres.degree or 100 }}
+                                </h6>
+                                {% if pres.feedback %}
+                                <p class="mb-0"><strong>Feedback:</strong> {{ pres.feedback }}</p>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+
+                            <!-- Actions -->
+                            {% if pres.status != 'graded' %}
+                            <div class="d-flex gap-2">
+                                {% if not pres.status or pres.status == 'not_started' %}
+                                <button class="btn btn-warning"
+                                    onclick="updateStatus('{{ pres.id }}', 'in_progress', 'presentations')">
+                                    <i class="fas fa-play me-2"></i>Start Working
+                                </button>
+                                {% endif %}
+
+                                {% if pres.status == 'in_progress' or pres.status == 'done' %}
+                                <a href="{{ url_for('student_bp.upload_assignment_page', assignment_id=pres.id, type='presentations') }}"
+                                    class="btn btn-primary">
+                                    <i class="fas fa-upload me-2"></i>Upload Files
+                                </a>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>No presentations available yet.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Update assignment status
+    function updateStatus(assignmentId, status, type) {
+        fetch('{{ url_for("student_bp.update_assignment_status") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                assignment_id: assignmentId,
+                status: status,
+                assignment_type: type
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error updating status: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating status');
+            });
+    }
+
+    // File upload preview
+    document.querySelectorAll('input[type="file"]').forEach(input => {
+        input.addEventListener('change', function (e) {
+            const fileListId = this.id.replace('file', 'fileList').replace('Proj', 'Proj');
+            const fileListDiv = document.getElementById(fileListId);
+            fileListDiv.innerHTML = '';
+
+            let totalSize = 0;
+            Array.from(this.files).forEach(file => {
+                totalSize += file.size;
+
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-list-item';
+                fileItem.innerHTML = `
+                <div>
+                    <i class="fas fa-file me-2"></i>
+                    <strong>${file.name}</strong>
+                    <small class="text-muted ms-2">(${(file.size / 1024).toFixed(2)} KB)</small>
+                </div>
+            `;
+                fileListDiv.appendChild(fileItem);
+            });
+
+            // Check total size
+            if (totalSize > 5 * 1024 * 1024) {
+                alert('Total file size exceeds 5MB limit!');
+                this.value = '';
+                fileListDiv.innerHTML = '';
+            }
+        });
+    });
+
+    // Drag and drop
+    document.querySelectorAll('.file-upload-area').forEach(area => {
+        area.addEventListener('dragover', function (e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+
+        area.addEventListener('dragleave', function () {
+            this.classList.remove('dragover');
+        });
+
+        area.addEventListener('drop', function (e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+
+            const input = this.parentElement.querySelector('input[type="file"]');
+            input.files = e.dataTransfer.files;
+            input.dispatchEvent(new Event('change'));
+        });
+    });
+</script>
+{% endblock %}

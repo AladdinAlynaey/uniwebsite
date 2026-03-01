@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}My Lectures{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>My Lectures</h1>
+        <a href="{{ url_for('student_bp.dashboard') }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+
+    {% if weeks %}
+        <div class="accordion" id="lecturesAccordion">
+            {% for week in weeks %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading{{ week }}">
+                        <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ week }}" aria-expanded="{% if loop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ week }}">
+                            Week {{ week }}
+                        </button>
+                    </h2>
+                    <div id="collapse{{ week }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading{{ week }}" data-bs-parent="#lecturesAccordion">
+                        <div class="accordion-body">
+                            <div class="list-group">
+                                {% for lecture in lectures_by_week[week] %}
+                                    <div class="list-group-item">
+                                        <div class="d-flex w-100 justify-content-between align-items-start mb-2">
+                                            <div class="flex-grow-1">
+                                                <a href="{{ url_for('main_bp.lecture_detail', lecture_id=lecture.id) }}" class="text-decoration-none">
+                                                    <h5 class="mb-1">{{ lecture.subject_name }}</h5>
+                                                </a>
+                                                <span class="badge bg-{{ 'primary' if lecture.lecture_type == 'Theoretical' else 'success' if lecture.lecture_type == 'Practical' else 'info' }} me-2">
+                                                    {{ lecture.lecture_type }}
+                                                </span>
+                                            </div>
+                                            <a href="{{ url_for('main_bp.lecture_detail', lecture_id=lecture.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye me-1"></i>More
+                                            </a>
+                                        </div>
+                                        <p class="mb-2">{{ lecture.description }}</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">
+                                                <i class="far fa-calendar-alt me-1"></i> {{ lecture.created_at[:10] if lecture.created_at else '' }}
+                                            </small>
+                                            {% if lecture.file_path %}
+                                                <a href="{{ url_for('main_bp.download_lecture_file', lecture_id=lecture.id) }}" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-download me-1"></i> Download Materials
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <h4 class="alert-heading">No Lectures Available</h4>
+            <p>There are currently no lectures available. Please check back later.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

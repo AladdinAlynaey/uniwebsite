@@ -1,0 +1,534 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Admin Dashboard Custom Styles */
+    .dashboard-header {
+        background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: var(--radius-xl);
+        margin-bottom: 2rem;
+    }
+
+    .dashboard-header h1 {
+        margin-bottom: 0.5rem;
+        font-size: 2rem;
+    }
+
+    .dashboard-header p {
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+
+    /* Stats Cards */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card-admin {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .stat-card-admin:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .stat-icon-admin {
+        width: 60px;
+        height: 60px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .stat-icon-admin.primary {
+        background: rgba(102, 126, 234, 0.15);
+        color: var(--primary);
+    }
+
+    .stat-icon-admin.info {
+        background: rgba(59, 130, 246, 0.15);
+        color: var(--info);
+    }
+
+    .stat-icon-admin.success {
+        background: rgba(16, 185, 129, 0.15);
+        color: var(--success);
+    }
+
+    .stat-icon-admin.warning {
+        background: rgba(245, 158, 11, 0.15);
+        color: var(--warning);
+    }
+
+    .stat-icon-admin.danger {
+        background: rgba(239, 68, 68, 0.15);
+        color: var(--danger);
+    }
+
+    .stat-content {
+        flex-grow: 1;
+        min-width: 0;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0;
+        line-height: 1.2;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-bottom: 0;
+    }
+
+    /* Content Grid */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    @media (max-width: 992px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Dashboard Cards */
+    .dashboard-card {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+    }
+
+    .dashboard-card-header {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .dashboard-card-header h5 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .dashboard-card-header i {
+        color: var(--primary);
+    }
+
+    .dashboard-card-body {
+        padding: 1.25rem;
+    }
+
+    /* List Items */
+    .dashboard-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .dashboard-list-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1rem;
+        border-radius: var(--radius-md);
+        transition: background 0.2s ease;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .dashboard-list-item:hover {
+        background: var(--bg-secondary);
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .dashboard-list-item+.dashboard-list-item {
+        border-top: 1px solid var(--border-color);
+    }
+
+    .list-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-md);
+        background: rgba(102, 126, 234, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        color: var(--primary);
+    }
+
+    .list-content {
+        flex-grow: 1;
+        min-width: 0;
+    }
+
+    .list-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        color: var(--text-primary);
+    }
+
+    .list-desc {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-bottom: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .list-date {
+        font-size: 0.75rem;
+        color: var(--text-tertiary);
+        white-space: nowrap;
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+    }
+
+    .quick-action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        padding: 1rem 1.25rem;
+        border-radius: var(--radius-lg);
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        border: 2px solid transparent;
+    }
+
+    .quick-action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        text-decoration: none;
+    }
+
+    .quick-action-btn i {
+        font-size: 1.1rem;
+    }
+
+    /* Full width feedback section */
+    .full-width-section {
+        grid-column: 1 / -1;
+    }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: var(--text-secondary);
+    }
+
+    .empty-state i {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    /* Mobile Adjustments */
+    @media (max-width: 768px) {
+        .dashboard-header {
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .stats-row {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .stat-card-admin {
+            flex-direction: column;
+            text-align: center;
+            padding: 1.25rem 1rem;
+        }
+
+        .stat-icon-admin {
+            width: 50px;
+            height: 50px;
+            font-size: 1.25rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+        }
+
+        .quick-actions {
+            grid-template-columns: 1fr;
+        }
+
+        .quick-action-btn {
+            justify-content: flex-start;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <h1><i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard</h1>
+        <p>Welcome back! Here's what's happening with your platform.</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-row">
+        <a href="{{ url_for('admin_bp.lectures') }}" class="stat-card-admin">
+            <div class="stat-icon-admin primary">
+                <i class="fas fa-chalkboard-teacher"></i>
+            </div>
+            <div class="stat-content">
+                <p class="stat-value">{{ lectures|length }}</p>
+                <p class="stat-label">Total Lectures</p>
+            </div>
+        </a>
+
+        <a href="{{ url_for('admin_bp.news') }}" class="stat-card-admin">
+            <div class="stat-icon-admin info">
+                <i class="fas fa-newspaper"></i>
+            </div>
+            <div class="stat-content">
+                <p class="stat-value">{{ news|length }}</p>
+                <p class="stat-label">News Items</p>
+            </div>
+        </a>
+
+        <a href="{{ url_for('admin_bp.students') }}" class="stat-card-admin">
+            <div class="stat-icon-admin success">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <div class="stat-content">
+                <p class="stat-value">{{ students|length if students else 0 }}</p>
+                <p class="stat-label">Students</p>
+            </div>
+        </a>
+
+        <a href="{{ url_for('admin_bp.feedback') }}" class="stat-card-admin">
+            <div class="stat-icon-admin warning">
+                <i class="fas fa-comment-dots"></i>
+            </div>
+            <div class="stat-content">
+                <p class="stat-value">{{ feedback|length }}</p>
+                <p class="stat-label">New Feedback</p>
+            </div>
+        </a>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="dashboard-grid">
+        <!-- Latest Lectures -->
+        <div class="dashboard-card">
+            <div class="dashboard-card-header">
+                <h5><i class="fas fa-book-open me-2"></i>Latest Lectures</h5>
+                <a href="{{ url_for('admin_bp.lectures') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="dashboard-card-body">
+                {% if lectures %}
+                <ul class="dashboard-list">
+                    {% for lecture in lectures[:4] %}
+                    <li>
+                        <a href="{{ url_for('main_bp.lecture_detail', lecture_id=lecture.id) }}"
+                            class="dashboard-list-item">
+                            <div class="list-icon">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <div class="list-content">
+                                <div class="list-title">{{ lecture.title }}</div>
+                                <p class="list-desc">{{ lecture.description|truncate(50) }}</p>
+                            </div>
+                            <span class="list-date">{{ lecture.created_at[:10] }}</span>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-book-open"></i>
+                    <p>No lectures available.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Latest News -->
+        <div class="dashboard-card">
+            <div class="dashboard-card-header">
+                <h5><i class="fas fa-newspaper me-2"></i>Latest News</h5>
+                <a href="{{ url_for('admin_bp.news') }}" class="btn btn-sm btn-outline-info">View All</a>
+            </div>
+            <div class="dashboard-card-body">
+                {% if news %}
+                <ul class="dashboard-list">
+                    {% for item in news[:4] %}
+                    <li>
+                        <a href="{{ url_for('main_bp.news_detail', news_id=item.id) }}" class="dashboard-list-item">
+                            <div class="list-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--info);">
+                                <i class="fas fa-bullhorn"></i>
+                            </div>
+                            <div class="list-content">
+                                <div class="list-title">{{ item.title }}</div>
+                                <p class="list-desc">{{ item.content|truncate(50) }}</p>
+                            </div>
+                            <span class="list-date">{{ item.created_at[:10] }}</span>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-newspaper"></i>
+                    <p>No news available.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="dashboard-card full-width-section">
+            <div class="dashboard-card-header">
+                <h5><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="dashboard-card-body">
+                <div class="quick-actions">
+                    <a href="{{ url_for('admin_bp.lectures') }}" class="quick-action-btn btn btn-primary">
+                        <i class="fas fa-plus-circle"></i>Add Lecture
+                    </a>
+                    <a href="{{ url_for('admin_bp.news') }}" class="quick-action-btn btn btn-info">
+                        <i class="fas fa-edit"></i>Post News
+                    </a>
+                    <a href="{{ url_for('admin_bp.students') }}" class="quick-action-btn btn btn-success">
+                        <i class="fas fa-users"></i>Manage Students
+                    </a>
+                    <a href="{{ url_for('admin_bp.subjects') }}" class="quick-action-btn btn btn-warning">
+                        <i class="fas fa-book"></i>Manage Subjects
+                    </a>
+                    <a href="{{ url_for('admin_bp.assignments') }}" class="quick-action-btn btn btn-secondary">
+                        <i class="fas fa-tasks"></i>Assignments
+                    </a>
+                    <a href="{{ url_for('admin_bp.attendance') }}" class="quick-action-btn btn btn-purple"
+                        style="background: #8b5cf6; border-color: #8b5cf6; color: white;">
+                        <i class="fas fa-calendar-check"></i>Attendance
+                    </a>
+                    <a href="{{ url_for('admin_bp.grades') }}" class="quick-action-btn btn btn-danger">
+                        <i class="fas fa-chart-line"></i>Grades
+                    </a>
+                    <a href="{{ url_for('admin_bp.settings') }}" class="quick-action-btn btn btn-dark">
+                        <i class="fas fa-cog"></i>Settings
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Feedback -->
+        <div class="dashboard-card full-width-section">
+            <div class="dashboard-card-header">
+                <h5><i class="fas fa-comment-dots me-2"></i>Recent Feedback</h5>
+                <a href="{{ url_for('admin_bp.feedback') }}" class="btn btn-sm btn-outline-warning">View All</a>
+            </div>
+            <div class="dashboard-card-body">
+                {% if feedback %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Subject</th>
+                                <th>Message</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in feedback[:5] %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="list-icon" style="width: 32px; height: 32px; font-size: 0.75rem;">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <span>{{ item.student_name }}</span>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-secondary">{{ item.subject_name }}</span></td>
+                                <td>{{ item.message|truncate(40) }}</td>
+                                <td><small class="text-muted">{{ item.created_at[:10] }}</small></td>
+                                <td>
+                                    <a href="{{ url_for('admin_bp.feedback_detail', feedback_id=item.id) }}"
+                                        class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-comment-dots"></i>
+                    <p>No new feedback available.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

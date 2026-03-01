@@ -1,0 +1,8 @@
+flask
+flask-cors
+python-dotenv
+requests
+python-telegram-bot
+google-generativeai
+werkzeug
+Flask-Markdown

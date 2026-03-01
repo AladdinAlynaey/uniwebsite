@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Subjects{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-4">Manage Subjects</h1>
+    
+    <!-- Add Subject Form -->
+    <div class="card shadow-sm border-0 mb-5">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Add New Subject</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin_bp.subjects') }}">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="code" class="form-label">Subject Code</label>
+                        <input type="text" class="form-control" id="code" name="code" placeholder="e.g., CS101" required>
+                    </div>
+                    <div class="col-md-5 mb-3">
+                        <label for="name" class="form-label">Subject Name</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="e.g., Introduction to Computer Science" required>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="semester" class="form-label">Semester</label>
+                        <input type="number" class="form-control" id="semester" name="semester" min="1" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="instructor" class="form-label">Instructor</label>
+                        <input type="text" class="form-control" id="instructor" name="instructor" placeholder="e.g., Dr. Smith">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="schedule_days" class="form-label">Schedule Days</label>
+                        <input type="text" class="form-control" id="schedule_days" name="schedule_days" placeholder="e.g., Mon, Wed, Fri">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="schedule_time" class="form-label">Schedule Time</label>
+                        <input type="text" class="form-control" id="schedule_time" name="schedule_time" placeholder="e.g., 10:00 AM - 11:30 AM">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="location" class="form-label">Location</label>
+                        <input type="text" class="form-control" id="location" name="location" placeholder="e.g., Room 101">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-2"></i>Add Subject
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Subjects List -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Subjects</h5>
+            <span class="badge bg-primary">{{ subjects|length }} Subjects</span>
+        </div>
+        <div class="card-body">
+            {% if subjects %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th scope="col">Semester</th>
+                                <th>Description</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for subject in subjects %}
+                                <tr>
+                                    <td>{{ subject.code }}</td>
+                                    <td>{{ subject.name }}</td>
+                                    <td>{{ subject.semester }}</td>
+                                    </td>
+                                    <td>{{ subject.description|truncate(50) }}</td>
+                                    <td>{{ subject.created_at[:10] if subject.created_at else 'N/A' }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('main_bp.subject_detail', subject_id=subject.id) }}" class="btn btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ url_for('admin_bp.edit_subject', subject_id=subject.id) }}" class="btn btn-outline-secondary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- No modals needed -->
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> No subjects found. Add your first subject using the form above.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

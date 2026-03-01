@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="University AI Batch - Complete educational platform with AI chatbot, role-based access, and Telegram integration">
+    <meta name="author" content="AI Eng. Alaadin">
+    <title>{% block title %}University AI Batch Educational Platform{% endblock %}</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.png') }}" type="image/png">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/favicon.png') }}">
+
+    <!-- Preconnect for Performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Modern Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- Mobile Responsive CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile.css') }}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class="modern-body">
+    <!-- LEGENDARY NAVIGATION -->
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <!-- Logo Section -->
+            <div class="navbar-brand-section">
+                <a href="{{ url_for('main_bp.index') }}" class="modern-brand">
+                    <div class="brand-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="brand-text">
+                        <span class="brand-name">University AI</span>
+                        <span class="brand-subtitle">Batch Platform</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Desktop Navigation -->
+            <div class="navbar-menu desktop-menu">
+                <a href="{{ url_for('main_bp.index') }}"
+                    class="nav-link-modern {% if request.path == url_for('main_bp.index') %}active{% endif %}">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="{{ url_for('main_bp.news') }}"
+                    class="nav-link-modern {% if 'news' in request.path %}active{% endif %}">
+                    <i class="fas fa-newspaper"></i>
+                    <span>News</span>
+                </a>
+                <a href="{{ url_for('main_bp.subjects') }}"
+                    class="nav-link-modern {% if 'subject' in request.path %}active{% endif %}">
+                    <i class="fas fa-book"></i>
+                    <span>Subjects</span>
+                </a>
+                {% if session.get('student_token') %}
+                <a href="{{ url_for('student_bp.tasks') }}"
+                    class="nav-link-modern {% if 'tasks' in request.path %}active{% endif %}">
+                    <i class="fas fa-tasks"></i>
+                    <span>Tasks</span>
+                </a>
+                {% endif %}
+                <a href="{{ url_for('main_bp.chatbot') }}"
+                    class="nav-link-modern {% if 'chatbot' in request.path %}active{% endif %}">
+                    <i class="fas fa-robot"></i>
+                    <span>AI Chat</span>
+                </a>
+            </div>
+
+            <!-- Right Actions -->
+            <div class="navbar-actions">
+                <!-- Clear Chat Button (Only on chatbot page) -->
+                {% if 'chatbot' in request.path %}
+                <a href="{{ url_for('main_bp.chatbot', clear=1) }}" class="action-btn clear-chat-btn"
+                    title="Clear Chat">
+                    <i class="fas fa-trash-alt"></i>
+                </a>
+                {% endif %}
+
+                <!-- Theme Toggle -->
+                <button type="button" class="action-btn theme-btn" id="themeToggle" aria-label="Toggle theme">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                </button>
+
+                <!-- User Menu -->
+                {% if session.get('is_admin') %}
+                <div class="user-menu-wrapper">
+                    <button class="user-menu-btn admin-btn" id="userMenuBtn">
+                        <div class="user-avatar admin-avatar">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <span class="user-name">Admin</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="dropdown-header">
+                            <i class="fas fa-user-shield me-2"></i>
+                            <span>Admin Panel</span>
+                        </div>
+                        <a href="{{ url_for('admin_bp.dashboard') }}" class="dropdown-link">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="{{ url_for('admin_bp.students') }}" class="dropdown-link">
+                            <i class="fas fa-users"></i>
+                            <span>Students</span>
+                        </a>
+                        <a href="{{ url_for('admin_bp.subjects') }}" class="dropdown-link">
+                            <i class="fas fa-book"></i>
+                            <span>Subjects</span>
+                        </a>
+                        <a href="{{ url_for('admin_bp.lectures') }}" class="dropdown-link">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                            <span>Lectures</span>
+                        </a>
+                        <a href="{{ url_for('admin_bp.assignments') }}" class="dropdown-link">
+                            <i class="fas fa-tasks"></i>
+                            <span>Assignments</span>
+                        </a>
+                        <a href="{{ url_for('admin_bp.news') }}" class="dropdown-link">
+                            <i class="fas fa-newspaper"></i>
+                            <span>News</span>
+                        </a>
+                        <a href="{{ url_for('admin_bp.settings') }}" class="dropdown-link">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="{{ url_for('main_bp.logout') }}" class="dropdown-link logout-link">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+                {% elif session.get('student_token') %}
+                <div class="user-menu-wrapper">
+                    <button class="user-menu-btn student-btn" id="userMenuBtn">
+                        <div class="user-avatar student-avatar">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <span class="user-name">Student</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="dropdown-header">
+                            <i class="fas fa-user-graduate me-2"></i>
+                            <span>Student Portal</span>
+                        </div>
+                        <a href="{{ url_for('student_bp.dashboard') }}" class="dropdown-link">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="{{ url_for('student_bp.tasks') }}" class="dropdown-link">
+                            <i class="fas fa-tasks"></i>
+                            <span>My Tasks</span>
+                        </a>
+                        <a href="{{ url_for('student_bp.grades') }}" class="dropdown-link">
+                            <i class="fas fa-chart-line"></i>
+                            <span>My Grades</span>
+                        </a>
+                        <a href="{{ url_for('student_bp.attendance') }}" class="dropdown-link">
+                            <i class="fas fa-calendar-check"></i>
+                            <span>Attendance</span>
+                        </a>
+                        <a href="{{ url_for('student_bp.feedback') }}" class="dropdown-link">
+                            <i class="fas fa-comment-dots"></i>
+                            <span>Feedback</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="{{ url_for('main_bp.logout') }}" class="dropdown-link logout-link">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <a href="{{ url_for('main_bp.student_login') }}" class="action-btn login-btn">
+                    <i class="fas fa-sign-in-alt me-2"></i>
+                    <span>Login</span>
+                </a>
+                {% endif %}
+
+                <!-- Mobile Menu Toggle (Last Item) -->
+                <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+            <a href="{{ url_for('main_bp.index') }}"
+                class="nav-link-modern {% if request.path == url_for('main_bp.index') %}active{% endif %}">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </a>
+            <a href="{{ url_for('main_bp.news') }}"
+                class="nav-link-modern {% if 'news' in request.path %}active{% endif %}">
+                <i class="fas fa-newspaper"></i>
+                <span>News</span>
+            </a>
+            <a href="{{ url_for('main_bp.subjects') }}"
+                class="nav-link-modern {% if 'subject' in request.path %}active{% endif %}">
+                <i class="fas fa-book"></i>
+                <span>Subjects</span>
+            </a>
+            {% if session.get('student_token') %}
+            <a href="{{ url_for('student_bp.tasks') }}"
+                class="nav-link-modern {% if 'tasks' in request.path %}active{% endif %}">
+                <i class="fas fa-tasks"></i>
+                <span>Tasks</span>
+            </a>
+            {% endif %}
+            <a href="{{ url_for('main_bp.chatbot') }}"
+                class="nav-link-modern {% if 'chatbot' in request.path %}active{% endif %}">
+                <i class="fas fa-robot"></i>
+                <span>AI Chat</span>
+            </a>
+            {% if 'chatbot' in request.path %}
+            <a href="{{ url_for('main_bp.chatbot', clear=1) }}" class="nav-link-modern"
+                style="color: #ef4444; border: 2px solid rgba(239, 68, 68, 0.3);">
+                <i class="fas fa-trash-alt"></i>
+                <span>Clear Chat</span>
+            </a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show animate-on-scroll">
+            {% if category == 'success' %}
+            <i class="fas fa-check-circle me-2"></i>
+            {% elif category == 'danger' %}
+            <i class="fas fa-exclamation-circle me-2"></i>
+            {% elif category == 'warning' %}
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            {% elif category == 'info' %}
+            <i class="fas fa-info-circle me-2"></i>
+            {% endif %}
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="container py-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center text-lg-start mt-5">
+        <div class="container p-4">
+            <div class="row">
+                <div class="col-lg-6 col-md-12 mb-4 mb-md-0">
+                    <h5><i class="fas fa-graduation-cap me-2"></i>University AI Batch</h5>
+                    <p>
+                        A complete educational platform with role-based access control,
+                        Telegram bot integration, and an intelligent chatbot Created by Alaadin.
+                    </p>
+                    <div class="social-links mt-3">
+                        <a href="https://facebook.com/profile.php?id=100006508424600" class="me-3" target="_blank"><i
+                                class="fab fa-facebook-f"></i></a>
+                        <a href="https://linkedin.com/in/alaadin-al-ynaey-179a88342" class="me-3" target="_blank"><i
+                                class="fab fa-linkedin-in"></i></a>
+                        <a href="https://github.com/AladdinAlynaey" class="me-3" target="_blank"><i
+                                class="fab fa-github"></i></a>
+                        <a href="http://aiengalaadin.duckdns.org:5004/" class="me-3" target="_blank"><i
+                                class="fas fa-globe"></i></a>
+
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li><a href="{{ url_for('main_bp.index') }}"><i class="fas fa-angle-right me-2"></i>Home</a>
+                        </li>
+                        <li><a href="{{ url_for('main_bp.news') }}"><i class="fas fa-angle-right me-2"></i>News</a></li>
+                        <li><a href="{{ url_for('main_bp.subjects') }}"><i
+                                    class="fas fa-angle-right me-2"></i>Subjects</a></li>
+                        <li><a href="{{ url_for('main_bp.chatbot') }}"><i class="fas fa-angle-right me-2"></i>AI
+                                Chatbot</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
+                    <h5>Contact</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-envelope me-2"></i> alaadinessam2016@gmail.com</li>
+                        <li><i class="fas fa-phone me-2"></i> +967 777 715 203</li>
+                    </ul>
+                    <div class="mt-3">
+                        <a href="https://t.me/{{ config.TELEGRAM_BOT_USERNAME }}" class="btn btn-outline-primary btn-sm"
+                            target="_blank">
+                            <i class="fab fa-telegram me-2"></i>Join Telegram Bot
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center p-3 copyright">
+            © 2025 University AI Batch Educational Platform By AI Eng.Alaadin
+        </div>
+    </footer>
+
+    <!-- Modern Back to top button -->
+    <button type="button" class="btn btn-primary btn-floating btn-lg" id="backToTopBtn">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+    <!-- Enhanced JavaScript -->
+    <script>
+        // ===== THEME TOGGLE FUNCTIONALITY =====
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const htmlElement = document.documentElement;
+
+        // Check for saved theme preference or default to 'dark'
+        const currentTheme = localStorage.getItem('theme') || 'dark';
+        htmlElement.setAttribute('data-theme', currentTheme);
+        updateThemeIcon(currentTheme);
+
+        // Theme toggle click handler
+        themeToggle.addEventListener('click', function () {
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+
+            htmlElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        });
+
+        // Update theme icon based on current theme
+        function updateThemeIcon(theme) {
+            if (theme === 'dark') {
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            } else {
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+            }
+        }
+
+        // ===== USER MENU TOGGLE =====
+        const userMenuBtn = document.getElementById('userMenuBtn');
+        const userDropdown = document.getElementById('userDropdown');
+
+        if (userMenuBtn && userDropdown) {
+            userMenuBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                userDropdown.classList.toggle('show');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function () {
+                userDropdown.classList.remove('show');
+            });
+        }
+
+        // ===== MOBILE MENU TOGGLE =====
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        if (mobileMenuToggle && mobileMenuOverlay) {
+            mobileMenuToggle.addEventListener('click', function () {
+                this.classList.toggle('active');
+                mobileMenuOverlay.classList.toggle('active');
+                document.body.classList.toggle('menu-open');
+            });
+
+            // Close mobile menu when clicking a link
+            document.querySelectorAll('.mobile-menu-overlay .nav-link-modern').forEach(link => {
+                link.addEventListener('click', function () {
+                    mobileMenuToggle.classList.remove('active');
+                    mobileMenuOverlay.classList.remove('active');
+                    document.body.classList.remove('menu-open');
+                });
+            });
+        }
+
+        // Legacy mobile menu support
+        if (mobileMenuToggle && mobileMenu) {
+            mobileMenuToggle.addEventListener('click', function () {
+                this.classList.toggle('active');
+                mobileMenu.classList.toggle('active');
+                document.body.classList.toggle('menu-open');
+            });
+
+            document.querySelectorAll('.mobile-nav-link').forEach(link => {
+                link.addEventListener('click', function () {
+                    mobileMenuToggle.classList.remove('active');
+                    mobileMenu.classList.remove('active');
+                    document.body.classList.remove('menu-open');
+                });
+            });
+        }
+
+        // Modern Back to top button with smooth animations
+        const backToTopBtn = document.getElementById("backToTopBtn");
+
+        // Show/hide the button based on scroll position
+        window.addEventListener("scroll", function () {
+            if (window.pageYOffset > 300) {
+                backToTopBtn.classList.add("show");
+            } else {
+                backToTopBtn.classList.remove("show");
+            }
+
+            // Add scrolled class to navbar
+            const navbar = document.querySelector('.navbar');
+            if (window.pageYOffset > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Scroll to top when clicked
+        backToTopBtn.addEventListener("click", function () {
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+        });
+
+        // Animate elements on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function (entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animated');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all elements with animate-on-scroll class
+        document.addEventListener('DOMContentLoaded', function () {
+            const animateElements = document.querySelectorAll('.animate-on-scroll');
+            animateElements.forEach(el => observer.observe(el));
+        });
+
+        // Add loading state to buttons
+        document.addEventListener('DOMContentLoaded', function () {
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    if (this.type === 'submit') {
+                        this.style.pointerEvents = 'none';
+                        const originalText = this.innerHTML;
+                        this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Loading...';
+
+                        setTimeout(() => {
+                            this.innerHTML = originalText;
+                            this.style.pointerEvents = 'auto';
+                        }, 2000);
+                    }
+                });
+            });
+
+            // ===== COUNTER ANIMATION =====
+            const counters = document.querySelectorAll('.stat-number[data-count]');
+            const observerOptions = {
+                threshold: 0.5,
+                rootMargin: '0px'
+            };
+
+            const counterObserver = new IntersectionObserver(function (entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !entry.target.classList.contains('counted')) {
+                        entry.target.classList.add('counted');
+                        const target = parseInt(entry.target.getAttribute('data-count'));
+                        const duration = 2000;
+                        const increment = target / (duration / 16);
+                        let current = 0;
+
+                        const updateCounter = () => {
+                            current += increment;
+                            if (current < target) {
+                                entry.target.textContent = Math.floor(current);
+                                requestAnimationFrame(updateCounter);
+                            } else {
+                                entry.target.textContent = target;
+                            }
+                        };
+
+                        updateCounter();
+                    }
+                });
+            }, observerOptions);
+
+            counters.forEach(counter => counterObserver.observe(counter));
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login - University AI Batch{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center login-container">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Admin Login</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('main_bp.login') }}">
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Admin Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </div>
+                </form>
+                <div class="mt-3 text-center">
+                    <p>Are you a student? <a href="{{ url_for('main_bp.student_login') }}">Login with your token</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

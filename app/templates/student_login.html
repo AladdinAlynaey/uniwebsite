@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Student Login - University AI Batch{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        padding: 2rem 0;
+    }
+    
+    /* Fix button styling in dark mode */
+    [data-theme="dark"] .btn-primary {
+        background: var(--primary) !important;
+        border-color: var(--primary) !important;
+        color: white !important;
+    }
+    
+    [data-theme="dark"] .btn-primary:hover {
+        background: var(--primary-hover) !important;
+        border-color: var(--primary-hover) !important;
+    }
+    
+    /* Fix card styling in dark mode */
+    [data-theme="dark"] .card {
+        background: var(--bg-primary) !important;
+        border-color: var(--border-color) !important;
+    }
+    
+    [data-theme="dark"] .card-header {
+        background: var(--primary) !important;
+        border-color: var(--primary) !important;
+        color: white !important;
+    }
+    
+    [data-theme="dark"] .card-body {
+        background: var(--bg-primary) !important;
+    }
+    
+    [data-theme="dark"] .card-body p,
+    [data-theme="dark"] .card-body a {
+        color: var(--text-primary) !important;
+    }
+    
+    [data-theme="dark"] .card-body a:hover {
+        color: var(--primary) !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center login-container">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-user-graduate me-2"></i>Student Login</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('main_bp.student_login') }}">
+                    <div class="mb-3">
+                        <label for="token" class="form-label">Student Token</label>
+                        <input type="text" class="form-control" id="token" name="token" placeholder="Enter your unique token" required>
+                        <div class="form-text">Enter the unique token provided by your administrator.</div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </button>
+                    </div>
+                </form>
+                <div class="mt-4 text-center">
+                    <p class="mb-2">Don't have a token? Contact your administrator.</p>
+                    <p class="mb-0">Are you an admin? <a href="{{ url_for('main_bp.login') }}" class="text-primary">Login here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

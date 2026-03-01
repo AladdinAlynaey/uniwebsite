@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Feedback Detail{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Feedback Detail</h1>
+        <div>
+            <a href="{{ url_for('student_bp.feedback_history') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Back to History
+            </a>
+        </div>
+    </div>
+
+    {% if feedback %}
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-{{ 'primary' if feedback.type == 'inquiry' else 'success' if feedback.type == 'suggestion' else 'danger' if feedback.type == 'complaint' else 'info' }} text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{{ feedback.subject }}</h5>
+                    <span class="badge bg-light text-dark">{{ feedback.type|capitalize }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted">Submitted on {{ feedback.created_at[:10] if feedback.created_at else 'Unknown date' }}</small>
+                        <span class="badge bg-{{ 'warning' if feedback.status == 'new' else 'info' if feedback.status == 'in_progress' else 'success' if feedback.status == 'resolved' else 'secondary' }}">
+                            {{ feedback.status|replace('_', ' ')|capitalize }}
+                        </span>
+                    </div>
+                    <hr>
+                    <div class="feedback-message">
+                        {{ feedback.message|nl2br }}
+                    </div>
+                </div>
+                
+                {% if feedback.replies %}
+                    <h6 class="mb-3">Responses</h6>
+                    <div class="feedback-replies">
+                        {% for reply in feedback.replies %}
+                            <div class="card mb-3 {{ 'border-primary' if reply.is_admin else '' }}">
+                                <div class="card-header bg-{{ 'light' if reply.is_admin else 'white' }}">
+                                    <div class="d-flex justify-content-between">
+                                        <span>
+                                            {% if reply.is_admin %}
+                                                <i class="fas fa-user-shield me-1"></i> Administrator
+                                            {% else %}
+                                                <i class="fas fa-user me-1"></i> You
+                                            {% endif %}
+                                        </span>
+                                        <small class="text-muted">{{ reply.timestamp[:10] if reply.timestamp else '' }}</small>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    {{ reply.text|nl2br }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                {% if feedback.status != 'closed' %}
+                    <div class="mt-4">
+                        <h6>Add Reply</h6>
+                        <form method="POST" action="{{ url_for('student_bp.feedback_reply', feedback_id=feedback.id) }}">
+                            <div class="mb-3">
+                                <textarea class="form-control" name="reply" rows="3" placeholder="Type your reply here..." required></textarea>
+                            </div>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-2"></i>Send Reply
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                {% else %}
+                    <div class="alert alert-secondary mt-4">
+                        <i class="fas fa-lock me-2"></i>
+                        This feedback thread has been closed and no further replies can be added.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-danger">
+            <h4 class="alert-heading">Feedback Not Found</h4>
+            <p>The requested feedback could not be found or you don't have permission to view it.</p>
+            <hr>
+            <a href="{{ url_for('student_bp.feedback_history') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Return to Feedback History
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

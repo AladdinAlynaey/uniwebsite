@@ -1,0 +1,368 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Settings{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-cog me-2"></i>Admin Settings</h1>
+        <a href="{{ url_for('admin_bp.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+
+    <!-- AI Provider Settings -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="fas fa-robot me-2"></i>AI Chatbot Settings</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin_bp.save_ai_settings') }}">
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Active AI Provider</label>
+                    <div class="row g-3">
+                        <!-- Gemini -->
+                        <div class="col-md-4">
+                            <div
+                                class="card h-100 {{ 'border-success border-2' if ai_settings.provider == 'gemini' else '' }}">
+                                <div class="card-body">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="ai_provider"
+                                            id="providerGemini" value="gemini" {{ 'checked' if
+                                            ai_settings.provider=='gemini' else '' }}>
+                                        <label class="form-check-label fw-bold" for="providerGemini">
+                                            <i class="fab fa-google me-2"></i>Google Gemini
+                                        </label>
+                                    </div>
+                                    <hr>
+                                    <small class="text-muted d-block mb-2">
+                                        <i class="fas fa-key me-1"></i>{{ ai_providers.gemini.api_keys_count }} API
+                                        key(s) configured
+                                    </small>
+                                    {% if ai_providers.gemini.configured %}
+                                    <span class="badge bg-success"><i class="fas fa-check me-1"></i>Ready</span>
+                                    {% else %}
+                                    <span class="badge bg-warning"><i class="fas fa-exclamation-triangle me-1"></i>Not
+                                        configured</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- OpenRouter -->
+                        <div class="col-md-4">
+                            <div
+                                class="card h-100 {{ 'border-success border-2' if ai_settings.provider == 'openrouter' else '' }}">
+                                <div class="card-body">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="ai_provider"
+                                            id="providerOpenRouter" value="openrouter" {{ 'checked' if
+                                            ai_settings.provider=='openrouter' else '' }}>
+                                        <label class="form-check-label fw-bold" for="providerOpenRouter">
+                                            <i class="fas fa-route me-2"></i>OpenRouter
+                                        </label>
+                                    </div>
+                                    <hr>
+                                    <small class="text-muted d-block mb-2">
+                                        <i class="fas fa-globe me-1"></i>Multiple free models
+                                    </small>
+                                    {% if ai_providers.openrouter.configured %}
+                                    <span class="badge bg-success"><i class="fas fa-check me-1"></i>Ready</span>
+                                    {% else %}
+                                    <span class="badge bg-warning"><i class="fas fa-exclamation-triangle me-1"></i>Not
+                                        configured</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Groq -->
+                        <div class="col-md-4">
+                            <div
+                                class="card h-100 {{ 'border-success border-2' if ai_settings.provider == 'groq' else '' }}">
+                                <div class="card-body">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="ai_provider"
+                                            id="providerGroq" value="groq" {{ 'checked' if ai_settings.provider=='groq'
+                                            else '' }}>
+                                        <label class="form-check-label fw-bold" for="providerGroq">
+                                            <i class="fas fa-bolt me-2"></i>Groq
+                                        </label>
+                                    </div>
+                                    <hr>
+                                    <small class="text-muted d-block mb-2">
+                                        <i class="fas fa-tachometer-alt me-1"></i>Ultra-fast inference
+                                    </small>
+                                    {% if ai_providers.groq.configured %}
+                                    <span class="badge bg-success"><i class="fas fa-check me-1"></i>Ready</span>
+                                    {% else %}
+                                    <span class="badge bg-warning"><i class="fas fa-exclamation-triangle me-1"></i>Not
+                                        configured</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Auto-Fallback:</strong> If the selected provider fails (e.g., quota exceeded), the system
+                    will automatically try other configured providers.
+                </div>
+
+                <!-- Test Result Display -->
+                <div id="testResult" class="alert d-none mb-3">
+                    <span id="testResultIcon"></span>
+                    <span id="testResultMessage"></span>
+                </div>
+
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="button" class="btn btn-outline-primary" id="testApiBtn"
+                        onclick="testSelectedProvider()">
+                        <i class="fas fa-flask me-2"></i>Test API
+                    </button>
+                    <button type="submit" class="btn btn-success" id="saveBtn">
+                        <i class="fas fa-save me-2"></i>Save AI Settings
+                    </button>
+                </div>
+            </form>
+
+            <hr class="my-4">
+
+            <h6><i class="fas fa-key me-2"></i>API Key Configuration</h6>
+            <p class="text-muted">Add API keys to your <code>.env</code> file:</p>
+
+            <div class="accordion" id="apiKeysAccordion">
+                <!-- Gemini Keys -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#geminiKeys">
+                            <i class="fab fa-google me-2"></i>Gemini API Keys
+                        </button>
+                    </h2>
+                    <div id="geminiKeys" class="accordion-collapse collapse" data-bs-parent="#apiKeysAccordion">
+                        <div class="accordion-body">
+                            <p>Get your API key from <a href="https://aistudio.google.com/apikey" target="_blank">Google
+                                    AI Studio</a></p>
+                            <pre class="bg-dark text-light p-3 rounded"><code># Add multiple keys for fallback
+GEMINI_API_KEY_1=your_first_key
+GEMINI_API_KEY_2=your_second_key
+GEMINI_API_KEY_3=your_third_key
+GEMINI_MODEL_NAME=gemini-2.0-flash</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OpenRouter Keys -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#openrouterKeys">
+                            <i class="fas fa-route me-2"></i>OpenRouter API Key
+                        </button>
+                    </h2>
+                    <div id="openrouterKeys" class="accordion-collapse collapse" data-bs-parent="#apiKeysAccordion">
+                        <div class="accordion-body">
+                            <p>Get your API key from <a href="https://openrouter.ai/keys" target="_blank">OpenRouter</a>
+                                (includes free models!)</p>
+                            <pre class="bg-dark text-light p-3 rounded"><code>OPENROUTER_API_KEY=your_openrouter_key
+OPENROUTER_MODEL=google/gemini-2.0-flash-exp:free</code></pre>
+                            <p class="text-muted mt-2">Free models include: google/gemini-2.0-flash-exp:free,
+                                meta-llama/llama-3.2-3b-instruct:free, qwen/qwen-2-7b-instruct:free</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Groq Keys -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#groqKeys">
+                            <i class="fas fa-bolt me-2"></i>Groq API Key
+                        </button>
+                    </h2>
+                    <div id="groqKeys" class="accordion-collapse collapse" data-bs-parent="#apiKeysAccordion">
+                        <div class="accordion-body">
+                            <p>Get your API key from <a href="https://console.groq.com/keys" target="_blank">Groq
+                                    Console</a> (free tier available!)</p>
+                            <pre class="bg-dark text-light p-3 rounded"><code>GROQ_API_KEY=your_groq_key
+GROQ_MODEL=llama-3.3-70b-versatile</code></pre>
+                            <p class="text-muted mt-2">Available models: llama-3.3-70b-versatile,
+                                llama-3.1-70b-versatile, mixtral-8x7b-32768</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Telegram Bot Settings -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fab fa-telegram me-2"></i>Telegram Bot Settings</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin_bp.settings') }}">
+                <div class="mb-3">
+                    <label for="telegram_token" class="form-label">Telegram Bot Token</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="telegram_token" name="telegram_token"
+                            value="{{ telegram_token }}" placeholder="Enter your Telegram bot token">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="telegram_username" class="form-label">Telegram Bot Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text">@</span>
+                        <input type="text" class="form-control" id="telegram_username" name="telegram_username"
+                            value="{{ telegram_username }}" placeholder="Enter your bot's username (without @)">
+                    </div>
+                    <div class="form-text">This is used to create links to your bot.</div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>Save Telegram Settings
+                </button>
+
+                <div class="form-text mt-3">
+                    <p>To create a new Telegram bot and get a token:</p>
+                    <ol>
+                        <li>Open Telegram and search for <strong>@BotFather</strong></li>
+                        <li>Send the command <code>/newbot</code> and follow the instructions</li>
+                        <li>Copy the token provided by BotFather and paste it here</li>
+                        <li>Copy the username of your bot (without @) and paste it above</li>
+                    </ol>
+                </div>
+            </form>
+
+            <div class="mt-4">
+                <h6>Webhook Setup Instructions</h6>
+                <p>After setting your token, you need to set up a webhook for your bot. Use the following URL format:
+                </p>
+                <div class="bg-dark text-light p-3 rounded">
+                    <code>https://api.telegram.org/bot<span class="text-danger">YOUR_TOKEN</span>/setWebhook?url=<span class="text-primary">YOUR_SERVER_URL</span>/api/telegram/webhook</code>
+                </div>
+                <p class="mt-2">Replace <span class="text-danger">YOUR_TOKEN</span> with your bot token and <span
+                        class="text-primary">YOUR_SERVER_URL</span> with your server's URL.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Settings -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="fas fa-server me-2"></i>System Settings</h5>
+        </div>
+        <div class="card-body">
+            <h6>Current Configuration</h6>
+            <table class="table table-bordered">
+                <tbody>
+                    <tr>
+                        <th style="width: 30%">Data Directory</th>
+                        <td><code>{{ config.DATA_DIR if config.DATA_DIR else 'Not set' }}</code></td>
+                    </tr>
+                    <tr>
+                        <th>Upload Directory</th>
+                        <td><code>{{ config.UPLOAD_FOLDER if config.UPLOAD_FOLDER else 'Not set' }}</code></td>
+                    </tr>
+                    <tr>
+                        <th>Debug Mode</th>
+                        <td>
+                            {% if config.DEBUG %}
+                            <span class="badge bg-warning">Enabled</span>
+                            {% else %}
+                            <span class="badge bg-success">Disabled</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function testSelectedProvider() {
+        // Get selected provider
+        const selectedProvider = document.querySelector('input[name="ai_provider"]:checked');
+        if (!selectedProvider) {
+            alert('Please select a provider first');
+            return;
+        }
+
+        const provider = selectedProvider.value;
+        const testBtn = document.getElementById('testApiBtn');
+        const testResult = document.getElementById('testResult');
+        const testResultIcon = document.getElementById('testResultIcon');
+        const testResultMessage = document.getElementById('testResultMessage');
+
+        console.log('Testing provider:', provider);
+
+        // Show loading state
+        testBtn.disabled = true;
+        testBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Testing...';
+        testResult.className = 'alert alert-info mb-3';
+        testResult.classList.remove('d-none');
+        testResultIcon.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>';
+        testResultMessage.textContent = 'Testing ' + provider + ' API... This may take a few seconds.';
+
+        // Make API call
+        fetch('/admin/settings/ai/test', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ provider: provider })
+        })
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error('HTTP error ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                testBtn.disabled = false;
+                testBtn.innerHTML = '<i class="fas fa-flask me-2"></i>Test API';
+
+                if (data.success) {
+                    testResult.className = 'alert alert-success mb-3';
+                    testResultIcon.innerHTML = '<i class="fas fa-check-circle me-2"></i>';
+                    testResultMessage.innerHTML = '<strong>Success!</strong> ' + data.message + '<br><small class="text-muted">Response: "' + data.response + '"</small>';
+                } else {
+                    testResult.className = 'alert alert-danger mb-3';
+                    testResultIcon.innerHTML = '<i class="fas fa-times-circle me-2"></i>';
+                    testResultMessage.innerHTML = '<strong>Failed!</strong> ' + data.message;
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                testBtn.disabled = false;
+                testBtn.innerHTML = '<i class="fas fa-flask me-2"></i>Test API';
+                testResult.className = 'alert alert-danger mb-3';
+                testResultIcon.innerHTML = '<i class="fas fa-times-circle me-2"></i>';
+                testResultMessage.textContent = 'Error: ' + error.message;
+            });
+    }
+
+    // Highlight selected provider card
+    document.querySelectorAll('input[name="ai_provider"]').forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            // Remove highlight from all cards
+            document.querySelectorAll('.card.border-success').forEach(function (card) {
+                card.classList.remove('border-success', 'border-2');
+            });
+            // Add highlight to selected card
+            this.closest('.card').classList.add('border-success', 'border-2');
+            // Hide any previous test results
+            document.getElementById('testResult').classList.add('d-none');
+        });
+    });
+</script>
+{% endblock %}

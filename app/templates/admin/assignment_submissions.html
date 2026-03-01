@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+
+{% block title %}Assignment Submissions{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Fix form colors in dark mode */
+    [data-theme="dark"] .form-label {
+        color: var(--text-primary) !important;
+    }
+    
+    [data-theme="dark"] .form-control,
+    [data-theme="dark"] .form-select {
+        background: var(--bg-secondary) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-color) !important;
+    }
+    
+    [data-theme="dark"] .form-control:focus,
+    [data-theme="dark"] .form-select:focus {
+        background: var(--bg-tertiary) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--primary) !important;
+    }
+    
+    .submission-card {
+        transition: all 0.3s ease;
+    }
+    
+    .submission-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function submitGrade(studentId, assignmentId, assignmentType) {
+    // Get grade and feedback inputs for this student
+    const gradeInput = document.querySelector(`.grade-input[data-student-id="${studentId}"]`);
+    const feedbackInput = document.querySelector(`.feedback-input[data-student-id="${studentId}"]`);
+    
+    const grade = parseFloat(gradeInput.value);
+    const feedback = feedbackInput.value.trim();
+    
+    // Validate grade
+    if (isNaN(grade) || grade < 0 || grade > 10) {
+        alert('Please enter a valid grade between 0 and 10');
+        gradeInput.focus();
+        return;
+    }
+    
+    // Create form and submit
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/admin/assignments/${assignmentId}/grade`;
+    
+    // Add hidden fields
+    const fields = {
+        'student_id': studentId,
+        'grade': grade,
+        'feedback': feedback,
+        'assignment_type': assignmentType
+    };
+    
+    for (const [key, value] of Object.entries(fields)) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = value;
+        form.appendChild(input);
+    }
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="fas fa-file-upload me-2"></i>Student Submissions</h1>
+            <p class="text-muted mb-0">{{ assignment.title }}</p>
+        </div>
+        <a href="{{ url_for('admin_bp.assignments') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Assignments
+        </a>
+    </div>
+
+    <!-- Assignment Info -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>Subject:</strong>
+                    <p>{{ assignment.subject_name }}</p>
+                </div>
+                {% if assignment.week %}
+                <div class="col-md-2">
+                    <strong>Week:</strong>
+                    <p>{{ assignment.week }}</p>
+                </div>
+                {% endif %}
+                <div class="col-md-3">
+                    <strong>Due Date:</strong>
+                    <p>{{ assignment.due_date }}</p>
+                </div>
+                <div class="col-md-4">
+                    <strong>Submissions:</strong>
+                    <p>{{ submissions|length }} students submitted</p>
+                </div>
+            </div>
+            <div class="mt-2">
+                <strong>Description:</strong>
+                <p>{{ assignment.description }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submissions Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Status</th>
+                            <th>Submitted At</th>
+                            <th>Files</th>
+                            <th>Grade (0-10)</th>
+                            <th>Feedback</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if submissions %}
+                            {% for submission_data in submissions %}
+                                {% set submission = submission_data.submission %}
+                                <tr>
+                                    <td><strong>{{ submission_data.student_name }}</strong></td>
+                                    <td>
+                                        {% if submission.status == 'done' %}
+                                            <span class="badge bg-success">Submitted</span>
+                                        {% elif submission.status == 'graded' %}
+                                            <span class="badge bg-primary">Graded</span>
+                                        {% elif submission.status == 'in_progress' %}
+                                            <span class="badge bg-warning">In Progress</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Not Started</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if submission.submitted_at %}
+                                            {{ submission.submitted_at[:10] }}<br>
+                                            <small class="text-muted">{{ submission.submitted_at[11:16] }}</small>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if submission.files %}
+                                            {% for file in submission.files %}
+                                                <a href="{{ url_for('admin_bp.download_assignment_file', filepath=file.relative_path) }}" class="btn btn-sm btn-outline-primary mb-1" download>
+                                                    <i class="fas fa-download me-1"></i>{{ file.filename }}
+                                                </a><br>
+                                            {% endfor %}
+                                        {% else %}
+                                            <span class="text-muted">No files</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if submission.status == 'done' or submission.status == 'graded' %}
+                                            <input type="number" class="form-control form-control-sm grade-input" 
+                                                   data-student-id="{{ submission_data.student_id }}" 
+                                                   min="0" max="10" step="0.5" 
+                                                   value="{{ submission.grade or '' }}" 
+                                                   placeholder="0-10" 
+                                                   style="width: 80px;">
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if submission.status == 'done' or submission.status == 'graded' %}
+                                            <textarea class="form-control form-control-sm feedback-input" 
+                                                      data-student-id="{{ submission_data.student_id }}" 
+                                                      rows="2" 
+                                                      placeholder="Enter feedback..." 
+                                                      style="min-width: 200px;">{{ submission.feedback or '' }}</textarea>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if submission.status == 'done' or submission.status == 'graded' %}
+                                            <button type="button" class="btn btn-sm btn-success" onclick="submitGrade('{{ submission_data.student_id }}', '{{ assignment.id }}', '{{ assignment_type }}')">
+                                                <i class="fas fa-check"></i> Save
+                                            </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">
+                                    <i class="fas fa-info-circle me-2"></i>No students have submitted this assignment yet.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

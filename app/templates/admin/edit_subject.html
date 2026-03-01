@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Subject{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main_bp.index') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin_bp.dashboard') }}">Admin</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin_bp.subjects') }}">Subjects</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Edit Subject</li>
+                </ol>
+            </nav>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Edit Subject</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin_bp.edit_subject', subject_id=subject.id) }}">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="code" class="form-label">Subject Code</label>
+                                <input type="text" class="form-control" id="code" name="code" value="{{ subject.code }}" required>
+                            </div>
+                            <div class="col-md-5 mb-3">
+                                <label for="name" class="form-label">Subject Name</label>
+                                <input type="text" class="form-control" id="name" name="name" value="{{ subject.name }}" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="semester" class="form-label">Semester</label>
+                                <input type="number" class="form-control" id="semester" name="semester" min="1" value="{{ subject.semester }}" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="instructor" class="form-label">Instructor</label>
+                                <input type="text" class="form-control" id="instructor" name="instructor" value="{{ subject.instructor or '' }}" placeholder="e.g., Dr. Smith">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="schedule_days" class="form-label">Schedule Days</label>
+                                <input type="text" class="form-control" id="schedule_days" name="schedule_days" value="{{ subject.schedule_days or '' }}" placeholder="e.g., Mon, Wed, Fri">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="schedule_time" class="form-label">Schedule Time</label>
+                                <input type="text" class="form-control" id="schedule_time" name="schedule_time" value="{{ subject.schedule_time or '' }}" placeholder="e.g., 10:00 AM - 11:30 AM">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="location" class="form-label">Location</label>
+                                <input type="text" class="form-control" id="location" name="location" value="{{ subject.location or '' }}" placeholder="e.g., Room 101">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" required>{{ subject.description }}</textarea>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('admin_bp.subjects') }}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

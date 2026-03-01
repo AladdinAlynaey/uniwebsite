@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Lecture - {{ subject.name }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-plus-circle me-2 text-primary"></i>Add New Lecture</h1>
+        <a href="{{ url_for('main_bp.subject_detail', subject_id=subject.id) }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to {{ subject.name }}
+        </a>
+    </div>
+    
+    <!-- Add Lecture Form -->
+    <div class="card shadow-sm border-0 mb-5">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-book me-2"></i>{{ subject.name }} ({{ subject.code }})</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin_bp.add_lecture', subject_id=subject.id) }}" enctype="multipart/form-data">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="subject_id" class="form-label">Subject</label>
+                        <select class="form-select" id="subject_id" name="subject_id" disabled>
+                            <option value="{{ subject.id }}" selected>{{ subject.name }}</option>
+                        </select>
+                        <!-- Hidden input to actually send the value since disabled inputs don't submit -->
+                        <input type="hidden" name="subject_id" value="{{ subject.id }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="week" class="form-label">Week</label>
+                        <select class="form-select" id="week" name="week" required>
+                            <option value="" selected disabled>Select Week</option>
+                            {% for i in range(1, 16) %}
+                                <option value="{{ i }}">Week {{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3" required placeholder="Describe what this lecture covers..."></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="lecture_file" class="form-label">Upload File</label>
+                    <input class="form-control" type="file" id="lecture_file" name="lecture_file" required>
+                    <div class="form-text">Upload lecture materials (PDF, PPTX, DOCX, etc.)</div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload me-2"></i>Upload Lecture
+                    </button>
+                    <a href="{{ url_for('main_bp.subject_detail', subject_id=subject.id) }}" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

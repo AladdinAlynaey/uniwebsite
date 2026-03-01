@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}Feedback Detail{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Feedback Detail</h1>
+        <a href="{{ url_for('admin_bp.feedback') }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Back to List
+        </a>
+    </div>
+
+    {% if feedback %}
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Feedback Content -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-primary">{{ feedback.subject }}</h6>
+                        <span class="badge bg-{{ 'primary' if feedback.type == 'inquiry' else 'success' if feedback.type == 'suggestion' else 'danger' if feedback.type == 'complaint' else 'info' }}">
+                            {{ feedback.type|capitalize }}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">
+                                    <strong>From:</strong> 
+                                    {% if feedback.student_name %}
+                                        {{ feedback.student_name }}
+                                    {% else %}
+                                        Student #{{ feedback.student_id }}
+                                    {% endif %}
+                                </small>
+                                <small class="text-muted">Submitted on {{ feedback.created_at[:10] if feedback.created_at else 'Unknown date' }}</small>
+                            </div>
+                            <hr>
+                            <div class="feedback-message">
+                                {{ feedback.message|nl2br }}
+                            </div>
+                        </div>
+                        
+                        {% if feedback.replies %}
+                            <h6 class="mb-3">Conversation</h6>
+                            <div class="feedback-replies">
+                                {% for reply in feedback.replies %}
+                                    <div class="card mb-3 {{ 'border-primary' if reply.is_admin else 'border-secondary' }}">
+                                        <div class="card-header bg-{{ 'light' if reply.is_admin else 'white' }}">
+                                            <div class="d-flex justify-content-between">
+                                                <span>
+                                                    {% if reply.is_admin %}
+                                                        <i class="fas fa-user-shield me-1"></i> Administrator
+                                                    {% else %}
+                                                        <i class="fas fa-user me-1"></i> Student
+                                                    {% endif %}
+                                                </span>
+                                                <small class="text-muted">{{ reply.timestamp[:10] if reply.timestamp else '' }}</small>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            {{ reply.text|nl2br }}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Reply Form -->
+                        <form action="{{ url_for('admin_bp.feedback_reply', feedback_id=feedback.id) }}" method="post" class="mt-4">
+                            <div class="form-group">
+                                <label for="reply">Reply to Student</label>
+                                <textarea class="form-control" id="reply" name="reply" rows="4" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary mt-2">
+                                <i class="fas fa-paper-plane me-1"></i> Send Reply
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <!-- Status Management -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Status Management</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="current-status mb-3">
+                            <h6>Current Status</h6>
+                            <span class="badge bg-{{ 'warning' if feedback.status == 'new' else 'info' if feedback.status == 'in_progress' else 'success' if feedback.status == 'resolved' else 'secondary' }} p-2">
+                                {{ feedback.status|replace('_', ' ')|capitalize }}
+                            </span>
+                        </div>
+                        
+                        <form action="{{ url_for('admin_bp.feedback_status', feedback_id=feedback.id) }}" method="post">
+                            <div class="form-group">
+                                <label for="status">Update Status</label>
+                                <select class="form-control" id="status" name="status">
+                                    <option value="new" {% if feedback.status == 'new' %}selected{% endif %}>New</option>
+                                    <option value="in_progress" {% if feedback.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                    <option value="resolved" {% if feedback.status == 'resolved' %}selected{% endif %}>Resolved</option>
+                                    <option value="archived" {% if feedback.status == 'archived' %}selected{% endif %}>Archived</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-info w-100 mt-2">
+                                <i class="fas fa-save me-1"></i> Update Status
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Feedback Information -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Feedback Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <strong>ID:</strong> {{ feedback.id }}
+                        </div>
+                        <div class="mb-2">
+                            <strong>Student ID:</strong> {{ feedback.student_id }}
+                        </div>
+                        <div class="mb-2">
+                            <strong>Created:</strong> {{ feedback.created_at }}
+                        </div>
+                        <div class="mb-2">
+                            <strong>Last Updated:</strong> {{ feedback.updated_at if feedback.updated_at else 'N/A' }}
+                        </div>
+                        <div class="mb-2">
+                            <strong>Replies:</strong> {{ feedback.replies|length if feedback.replies else 0 }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-danger">
+            <h4 class="alert-heading">Feedback Not Found</h4>
+            <p>The requested feedback item could not be found.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

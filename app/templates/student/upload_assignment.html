@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Assignment{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="fas fa-upload me-2"></i>Upload Assignment</h1>
+            <p class="text-muted mb-0">{{ assignment.title }}</p>
+        </div>
+        <a href="{{ url_for('student_bp.tasks') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Tasks
+        </a>
+    </div>
+
+    <!-- Assignment Info -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <strong>Subject:</strong>
+                    <p>{{ assignment.subject_name }}</p>
+                </div>
+                {% if assignment.week %}
+                <div class="col-md-2">
+                    <strong>Week:</strong>
+                    <p>{{ assignment.week }}</p>
+                </div>
+                {% endif %}
+                <div class="col-md-3">
+                    <strong>Due Date:</strong>
+                    <p>{{ assignment.due_date }}</p>
+                </div>
+                <div class="col-md-3">
+                    <strong>Status:</strong>
+                    <p>
+                        {% if assignment.status == 'done' %}
+                            <span class="badge bg-success">Submitted</span>
+                        {% elif assignment.status == 'graded' %}
+                            <span class="badge bg-primary">Graded: {{ assignment.grade }}/100</span>
+                        {% elif assignment.status == 'in_progress' %}
+                            <span class="badge bg-warning">In Progress</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Not Started</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            <div class="mt-2">
+                <strong>Description:</strong>
+                <p>{{ assignment.description }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Previously Uploaded Files -->
+    {% if assignment.files %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-paperclip me-2"></i>Previously Uploaded Files</h5>
+        </div>
+        <div class="card-body">
+            {% for file in assignment.files %}
+                <div class="d-flex justify-content-between align-items-center mb-2 p-3" style="background: var(--bg-secondary); border-radius: 8px;">
+                    <div>
+                        <i class="fas fa-file me-2"></i>
+                        <strong>{{ file.filename }}</strong>
+                        <small class="text-muted ms-2">({{ file.size_formatted }})</small>
+                    </div>
+                    <a href="{{ url_for('student_bp.download_submission', filepath=file.relative_path) }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Upload Form -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-cloud-upload-alt me-2"></i>Upload New Files</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('student_bp.submit_assignment') }}" enctype="multipart/form-data" id="uploadForm">
+                <input type="hidden" name="assignment_id" value="{{ assignment.id }}">
+                <input type="hidden" name="assignment_type" value="{{ assignment_type }}">
+                
+                <div class="mb-4">
+                    <label for="files" class="form-label">Select Files to Upload</label>
+                    <input type="file" class="form-control" id="files" name="files" multiple accept=".pdf,.docx,.doc,.zip,.jpg,.jpeg,.png,.txt,.py,.ipynb" required>
+                    <div class="form-text">
+                        Allowed formats: PDF, DOCX, ZIP, Images, Code files. Maximum total size: 5MB
+                    </div>
+                </div>
+                
+                <div id="filePreview" class="mb-4"></div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Once you upload files, your assignment status will be marked as "Submitted" and will be sent to your instructor for grading.
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success" id="submitBtn">
+                        <i class="fas fa-check me-2"></i>Submit Assignment
+                    </button>
+                    <a href="{{ url_for('student_bp.tasks') }}" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const fileInput = document.getElementById('files');
+const filePreview = document.getElementById('filePreview');
+const submitBtn = document.getElementById('submitBtn');
+const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+
+fileInput.addEventListener('change', function() {
+    filePreview.innerHTML = '';
+    let totalSize = 0;
+    
+    if (this.files.length === 0) {
+        submitBtn.disabled = true;
+        return;
+    }
+    
+    Array.from(this.files).forEach(file => {
+        totalSize += file.size;
+        
+        const fileItem = document.createElement('div');
+        fileItem.className = 'd-flex justify-content-between align-items-center mb-2 p-3';
+        fileItem.style.background = 'var(--bg-secondary)';
+        fileItem.style.borderRadius = '8px';
+        
+        fileItem.innerHTML = `
+            <div>
+                <i class="fas fa-file me-2"></i>
+                <strong>${file.name}</strong>
+                <small class="text-muted ms-2">(${(file.size / 1024).toFixed(2)} KB)</small>
+            </div>
+            <span class="badge bg-success">Ready</span>
+        `;
+        
+        filePreview.appendChild(fileItem);
+    });
+    
+    // Check total size
+    if (totalSize > MAX_SIZE) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'alert alert-danger';
+        errorDiv.innerHTML = `
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Total file size (${(totalSize / (1024 * 1024)).toFixed(2)} MB) exceeds the 5MB limit!
+            Please remove some files.
+        `;
+        filePreview.appendChild(errorDiv);
+        submitBtn.disabled = true;
+    } else {
+        const successDiv = document.createElement('div');
+        successDiv.className = 'alert alert-success';
+        successDiv.innerHTML = `
+            <i class="fas fa-check-circle me-2"></i>
+            Total size: ${(totalSize / (1024 * 1024)).toFixed(2)} MB / 5MB
+        `;
+        filePreview.appendChild(successDiv);
+        submitBtn.disabled = false;
+    }
+});
+
+// Form submission
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Uploading...';
+});
+</script>
+{% endblock %}

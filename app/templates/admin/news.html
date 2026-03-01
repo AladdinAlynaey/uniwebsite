@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage News{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-4">Manage News</h1>
+    
+    <!-- Add News Form -->
+    <div class="card shadow-sm border-0 mb-5">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Add News Item</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin_bp.news') }}">
+                <div class="mb-3">
+                    <label for="title" class="form-label">Title</label>
+                    <input type="text" class="form-control" id="title" name="title" required>
+                </div>
+                <div class="mb-3">
+                    <label for="content" class="form-label">Content</label>
+                    <textarea class="form-control" id="content" name="content" rows="5" required></textarea>
+                    <div class="form-text">You can use Markdown formatting for rich text.</div>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-2"></i>Publish News
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- News List -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">News Items</h5>
+            <span class="badge bg-primary">{{ news|length }} Items</span>
+        </div>
+        <div class="card-body">
+            {% if news %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Content</th>
+                                <th>Published</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in news %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>{{ item.title }}</td>
+                                    <td>{{ item.content|truncate(50) }}</td>
+                                    <td>{{ item.created_at[:10] if item.created_at else 'N/A' }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('main_bp.news_detail', news_id=item.id) }}" class="btn btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ url_for('admin_bp.edit_news', news_id=item.id) }}" class="btn btn-outline-secondary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteNewsModal{{ item.id }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Delete Modal -->
+                                        <div class="modal fade" id="deleteNewsModal{{ item.id }}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header bg-danger text-white">
+                                                        <h5 class="modal-title">Confirm Delete</h5>
+                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p>Are you sure you want to delete the news item: <strong>{{ item.title }}</strong>?</p>
+                                                        <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>This action cannot be undone.</p>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                        <form method="POST" action="{{ url_for('admin_bp.delete_news', news_id=item.id) }}">
+                                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> No news items found. Add your first news item using the form above.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

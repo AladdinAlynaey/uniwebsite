@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Assignments{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="fas fa-tasks me-2"></i>Manage Assignments</h1>
+            <p class="text-muted mb-0">Create and manage student assignments, projects, and presentations</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ url_for('admin_bp.create_assignment_page', type='weekly_homework') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>New Homework
+            </a>
+            <a href="{{ url_for('admin_bp.create_assignment_page', type='final_projects') }}" class="btn btn-success">
+                <i class="fas fa-plus me-2"></i>New Project
+            </a>
+            <a href="{{ url_for('admin_bp.create_assignment_page', type='presentations') }}" class="btn btn-info">
+                <i class="fas fa-plus me-2"></i>New Presentation
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-2 col-md-4 col-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h3 class="text-primary mb-0">{{ stats.total_homework }}</h3>
+                    <small class="text-muted">Weekly Homework</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h3 class="text-success mb-0">{{ stats.total_projects }}</h3>
+                    <small class="text-muted">Final Projects</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h3 class="text-info mb-0">{{ stats.total_presentations }}</h3>
+                    <small class="text-muted">Presentations</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h3 class="text-warning mb-0">{{ stats.pending_submissions }}</h3>
+                    <small class="text-muted">Pending Submissions</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h3 class="text-danger mb-0">{{ stats.to_grade }}</h3>
+                    <small class="text-muted">To Grade</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-4" id="assignmentsTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="homework-tab" data-bs-toggle="tab" data-bs-target="#homework"
+                type="button" role="tab">
+                <i class="fas fa-book me-2"></i>Weekly Homework
+                <span class="badge bg-primary ms-2">{{ homework|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="projects-tab" data-bs-toggle="tab" data-bs-target="#projects" type="button"
+                role="tab">
+                <i class="fas fa-project-diagram me-2"></i>Final Projects
+                <span class="badge bg-success ms-2">{{ projects|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="presentations-tab" data-bs-toggle="tab" data-bs-target="#presentations"
+                type="button" role="tab">
+                <i class="fas fa-chalkboard-teacher me-2"></i>Presentations
+                <span class="badge bg-info ms-2">{{ presentations|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="submissions-tab" data-bs-toggle="tab" data-bs-target="#submissions"
+                type="button" role="tab">
+                <i class="fas fa-file-upload me-2"></i>Student Submissions
+                <span class="badge bg-warning ms-2">{{ submissions_count }}</span>
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="assignmentsTabContent">
+        <!-- Weekly Homework Tab -->
+        <div class="tab-pane fade show active" id="homework" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    {% if homework %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Week</th>
+                                    <th>Subject</th>
+                                    <th>Title</th>
+                                    <th>Degree</th>
+                                    <th>Due Date</th>
+                                    <th>Submissions</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for hw in homework %}
+                                <tr>
+                                    <td><span class="badge bg-primary">Week {{ hw.week }}</span></td>
+                                    <td>{{ hw.subject_name }}</td>
+                                    <td>{{ hw.title }}</td>
+                                    <td><span class="badge bg-secondary">{{ hw.degree or 10 }} pts</span></td>
+                                    <td>{{ hw.due_date }}</td>
+                                    <td>
+                                        <span class="badge bg-success">{{ hw.submitted_count or 0 }}</span> /
+                                        <span class="badge bg-secondary">{{ hw.total_students or 0 }}</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info"
+                                            onclick="viewSubmissions('{{ hw.id }}', 'weekly_homework')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-warning"
+                                            onclick="editAssignment('{{ hw.id }}', 'weekly_homework')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger"
+                                            onclick="deleteAssignment('{{ hw.id }}', 'weekly_homework')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No homework assignments yet. Click "New Homework" to create one.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Final Projects Tab -->
+        <div class="tab-pane fade" id="projects" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    {% if projects %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Title</th>
+                                    <th>Degree</th>
+                                    <th>Due Date</th>
+                                    <th>Submissions</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for proj in projects %}
+                                <tr>
+                                    <td>{{ proj.subject_name }}</td>
+                                    <td>{{ proj.title }}</td>
+                                    <td><span class="badge bg-success">{{ proj.degree or 10 }} pts</span></td>
+                                    <td>{{ proj.due_date }}</td>
+                                    <td>
+                                        <span class="badge bg-success">{{ proj.submitted_count or 0 }}</span> /
+                                        <span class="badge bg-secondary">{{ proj.total_students or 0 }}</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info"
+                                            onclick="viewSubmissions('{{ proj.id }}', 'final_projects')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-warning"
+                                            onclick="editAssignment('{{ proj.id }}', 'final_projects')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger"
+                                            onclick="deleteAssignment('{{ proj.id }}', 'final_projects')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-project-diagram fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No final projects yet. Click "New Project" to create one.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Presentations Tab -->
+        <div class="tab-pane fade" id="presentations" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    {% if presentations %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Title</th>
+                                    <th>Degree</th>
+                                    <th>Due Date</th>
+                                    <th>Submissions</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pres in presentations %}
+                                <tr>
+                                    <td>{{ pres.subject_name }}</td>
+                                    <td>{{ pres.title }}</td>
+                                    <td><span class="badge bg-info">{{ pres.degree or 10 }} pts</span></td>
+                                    <td>{{ pres.due_date }}</td>
+                                    <td>
+                                        <span class="badge bg-success">{{ pres.submitted_count or 0 }}</span> /
+                                        <span class="badge bg-secondary">{{ pres.total_students or 0 }}</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info"
+                                            onclick="viewSubmissions('{{ pres.id }}', 'presentations')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-warning"
+                                            onclick="editAssignment('{{ pres.id }}', 'presentations')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger"
+                                            onclick="deleteAssignment('{{ pres.id }}', 'presentations')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chalkboard-teacher fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No presentations yet. Click "New Presentation" to create one.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Submissions Tab -->
+        <div class="tab-pane fade" id="submissions" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    <p class="text-muted">Select an assignment from the Homework, Projects, or Presentations tab to view
+                        submissions.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+    function viewSubmissions(assignmentId, type) {
+        window.location.href = `/admin/assignments/${assignmentId}/submissions?type=${type}`;
+    }
+
+    function editAssignment(assignmentId, type) {
+        window.location.href = `/admin/assignments/${assignmentId}/edit?type=${type}`;
+    }
+
+    function deleteAssignment(assignmentId, type) {
+        if (confirm('Are you sure you want to delete this assignment? This action cannot be undone.')) {
+            fetch(`/admin/assignments/${assignmentId}/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ assignment_type: type })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error deleting assignment: ' + data.message);
+                    }
+                });
+        }
+    }
+</script>
+{% endblock %}

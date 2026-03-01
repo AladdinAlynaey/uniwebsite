@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}Subjects - University AI Batch{% endblock %}
+
+{% block content %}
+<!-- LEGENDARY SUBJECTS HERO -->
+<section class="subjects-hero-modern">
+    <div class="hero-gradient-overlay"></div>
+    <div class="hero-pattern"></div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-xl-8 text-center">
+                <div class="hero-badge-modern mb-4">
+                    <i class="fas fa-book me-2"></i>
+                    <span>Course Curriculum</span>
+                </div>
+                <h1 class="hero-title-modern mb-4">
+                    Explore <span class="gradient-text-subjects">Subjects</span> by Semester
+                </h1>
+                <p class="hero-description-modern mb-4">
+                    Comprehensive course materials and resources for all semesters
+                </p>
+                {% if session.get('is_admin') %}
+                <a href="{{ url_for('admin_bp.subjects') }}" class="btn-hero-modern">
+                    <i class="fas fa-edit"></i>
+                    <span>Manage Subjects</span>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SUBJECTS CONTENT SECTION -->
+<section class="subjects-content-section">
+    <div class="container">
+        <div class="row">
+            <!-- Semester Filter Sidebar -->
+            <div class="col-lg-3 mb-4">
+                <div class="filter-sidebar-modern">
+                    <div class="filter-header">
+                        <i class="fas fa-filter"></i>
+                        <h5>Filter by Semester</h5>
+                    </div>
+                    <div class="filter-list" id="semester-filter">
+                        <a href="#" class="filter-item active" data-semester="all">
+                            <span class="filter-icon"><i class="fas fa-th"></i></span>
+                            <span class="filter-text">All Semesters</span>
+                            <span class="filter-badge">{{ subjects|length }}</span>
+                        </a>
+                        {% for semester in semesters %}
+                        <a href="#" class="filter-item" data-semester="{{ semester }}">
+                            <span class="filter-icon"><i class="fas fa-book-open"></i></span>
+                            <span class="filter-text">Semester {{ semester }}</span>
+                            <span class="filter-badge">{{ subjects_by_semester[semester]|length }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Subjects Grid -->
+            <div class="col-lg-9">
+            <div class="semester-section" id="all-subjects">
+                <div class="row">
+                    {% if semesters %}
+                        {% for semester in semesters %}
+                            {% if subjects_by_semester[semester] %}
+                                {% for subject in subjects_by_semester[semester] %}
+                                    <div class="col-md-6 mb-4">
+                                        <div class="subject-card-modern">
+                                            <div class="subject-card-header">
+                                                <div class="subject-icon">
+                                                    <i class="fas fa-book"></i>
+                                                </div>
+                                                <span class="subject-semester-badge">Sem {{ semester }}</span>
+                                            </div>
+                                            <div class="subject-card-body">
+                                                <div class="subject-code">{{ subject.code }}</div>
+                                                <h3 class="subject-title">{{ subject.name }}</h3>
+                                                <p class="subject-description">
+                                                    {% if subject.description|length > 120 %}
+                                                        {{ subject.description[:120] }}...
+                                                    {% else %}
+                                                        {{ subject.description }}
+                                                    {% endif %}
+                                                </p>
+                                                <a href="{{ url_for('main_bp.subject_detail', subject_id=subject.id) }}" class="subject-link">
+                                                    <span>View Details</span>
+                                                    <i class="fas fa-arrow-right"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-12">
+                            <div class="empty-state-modern">
+                                <div class="empty-icon-wrapper">
+                                    <i class="fas fa-book"></i>
+                                </div>
+                                <h3 class="empty-title">No Subjects Available</h3>
+                                <p class="empty-description">Subjects will be added soon. Check back later!</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if semesters %}
+                {% for semester in semesters %}
+                    <div class="semester-section" id="semester-{{ semester }}" style="display: none;">
+                        <div class="semester-header-modern mb-4">
+                            <h3 class="semester-title-modern">
+                                <i class="fas fa-graduation-cap"></i>
+                                Semester {{ semester }}
+                            </h3>
+                            <span class="semester-count">{{ subjects_by_semester[semester]|length }} Subjects</span>
+                        </div>
+                        <div class="row">
+                            {% if subjects_by_semester[semester] %}
+                                {% for subject in subjects_by_semester[semester] %}
+                                    <div class="col-md-6 mb-4">
+                                        <div class="subject-card-modern">
+                                            <div class="subject-card-header">
+                                                <div class="subject-icon">
+                                                    <i class="fas fa-book"></i>
+                                                </div>
+                                                <span class="subject-semester-badge">Sem {{ semester }}</span>
+                                            </div>
+                                            <div class="subject-card-body">
+                                                <div class="subject-code">{{ subject.code }}</div>
+                                                <h3 class="subject-title">{{ subject.name }}</h3>
+                                                <p class="subject-description">
+                                                    {% if subject.description|length > 120 %}
+                                                        {{ subject.description[:120] }}...
+                                                    {% else %}
+                                                        {{ subject.description }}
+                                                    {% endif %}
+                                                </p>
+                                                <a href="{{ url_for('main_bp.subject_detail', subject_id=subject.id) }}" class="subject-link">
+                                                    <span>View Details</span>
+                                                    <i class="fas fa-arrow-right"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="col-12">
+                                    <div class="empty-state-modern">
+                                        <div class="empty-icon-wrapper">
+                                            <i class="fas fa-book"></i>
+                                        </div>
+                                        <h3 class="empty-title">No Subjects Available</h3>
+                                        <p class="empty-description">No subjects for this semester yet.</p>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Semester filter functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const filterItems = document.querySelectorAll('.filter-item');
+    const semesterSections = document.querySelectorAll('.semester-section');
+    
+    filterItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Remove active class from all items
+            filterItems.forEach(i => i.classList.remove('active'));
+            
+            // Add active class to clicked item
+            this.classList.add('active');
+            
+            // Hide all semester sections
+            semesterSections.forEach(section => section.style.display = 'none');
+            
+            // Show selected semester section with animation
+            const semesterId = this.getAttribute('data-semester');
+            const targetSection = semesterId === 'all' 
+                ? document.getElementById('all-subjects')
+                : document.getElementById(`semester-${semesterId}`);
+            
+            if (targetSection) {
+                targetSection.style.display = 'block';
+                targetSection.style.opacity = '0';
+                setTimeout(() => {
+                    targetSection.style.transition = 'opacity 0.3s ease';
+                    targetSection.style.opacity = '1';
+                }, 10);
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 
