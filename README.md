@@ -281,7 +281,7 @@ All rights reserved. No part of this software may be reproduced, distributed, or
 
 <div align="center">
 
-**Built with ❤️ by AI Eng. Alaadin**
+**Built by AI Eng. Alaadin**
 
 *University AI Platform — Transforming Education Through Technology*
 

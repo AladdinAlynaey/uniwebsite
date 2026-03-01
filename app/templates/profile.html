@@ -1,0 +1,402 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile — University AI Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-wrapper {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .profile-header-card {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+
+    .profile-banner {
+        height: 120px;
+        position: relative;
+    }
+
+    .profile-banner.super_admin {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
+    }
+
+    .profile-banner.faculty_head {
+        background: linear-gradient(135deg, #3b82f6, #60a5fa, #93c5fd);
+    }
+
+    .profile-banner.teacher {
+        background: linear-gradient(135deg, #10b981, #34d399, #6ee7b7);
+    }
+
+    .profile-banner.batch_rep {
+        background: linear-gradient(135deg, #f59e0b, #fbbf24, #fcd34d);
+    }
+
+    .profile-banner.student {
+        background: linear-gradient(135deg, #06b6d4, #22d3ee, #67e8f9);
+    }
+
+    .profile-avatar-area {
+        display: flex;
+        align-items: flex-end;
+        gap: 1.25rem;
+        padding: 0 2rem;
+        margin-top: -48px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .profile-avatar {
+        width: 96px;
+        height: 96px;
+        border-radius: 20px;
+        border: 4px solid var(--bg-primary);
+        background: var(--bg-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        color: var(--text-secondary);
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    .profile-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .profile-info {
+        padding-bottom: 1rem;
+    }
+
+    .profile-info h2 {
+        font-size: 1.35rem;
+        font-weight: 700;
+        margin-bottom: 0.15rem;
+    }
+
+    .profile-info .role-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.2rem 0.7rem;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        font-weight: 600;
+    }
+
+    .role-badge.super_admin {
+        background: rgba(139, 92, 246, 0.15);
+        color: #8b5cf6;
+    }
+
+    .role-badge.faculty_head {
+        background: rgba(59, 130, 246, 0.15);
+        color: #3b82f6;
+    }
+
+    .role-badge.teacher {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+    }
+
+    .role-badge.batch_rep {
+        background: rgba(245, 158, 11, 0.15);
+        color: #f59e0b;
+    }
+
+    .role-badge.student {
+        background: rgba(6, 182, 212, 0.15);
+        color: #06b6d4;
+    }
+
+    .profile-body {
+        padding: 0 2rem 1.5rem;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .info-item {}
+
+    .info-item label {
+        display: block;
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.2rem;
+    }
+
+    .info-item span {
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    .section-card {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 1.5rem 2rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .section-card h3 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-row {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .form-row .form-group {
+        flex: 1;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 0.35rem;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 0.65rem 1rem;
+        border: 2px solid var(--border-color);
+        border-radius: 10px;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        transition: border-color 0.3s;
+        outline: none;
+    }
+
+    .form-group input:focus {
+        border-color: #8b5cf6;
+    }
+
+    .btn-save {
+        padding: 0.6rem 1.5rem;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-danger {
+        padding: 0.6rem 1.5rem;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+    }
+
+    .img-upload-area {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .img-upload-area input[type="file"] {
+        max-width: 280px;
+    }
+
+    @media (max-width: 576px) {
+        .profile-avatar-area {
+            padding: 0 1rem;
+            gap: 0.75rem;
+        }
+
+        .profile-body {
+            padding: 0 1rem 1rem;
+        }
+
+        .section-card {
+            padding: 1rem;
+        }
+
+        .form-row {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .profile-avatar {
+            width: 72px;
+            height: 72px;
+            font-size: 1.6rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-wrapper">
+    <!-- Header Card -->
+    <div class="profile-header-card">
+        <div class="profile-banner {{ profile_user.role }}"></div>
+        <div class="profile-avatar-area">
+            <div class="profile-avatar">
+                {% if profile_user.profile_image %}
+                <img src="{{ url_for('static', filename=profile_user.profile_image) }}" alt="Profile">
+                {% else %}
+                <i
+                    class="fas fa-{% if profile_user.role == 'super_admin' %}crown{% elif profile_user.role == 'faculty_head' %}user-tie{% elif profile_user.role == 'teacher' %}chalkboard-teacher{% elif profile_user.role == 'batch_rep' %}user-shield{% else %}user-graduate{% endif %}"></i>
+                {% endif %}
+            </div>
+            <div class="profile-info">
+                <h2>{{ profile_user.name }}</h2>
+                <span class="role-badge {{ profile_user.role }}">
+                    <i
+                        class="fas fa-{% if profile_user.role == 'super_admin' %}crown{% elif profile_user.role == 'faculty_head' %}user-tie{% elif profile_user.role == 'teacher' %}chalkboard-teacher{% elif profile_user.role == 'batch_rep' %}user-shield{% else %}user-graduate{% endif %}"></i>
+                    {{ profile_user.role | replace('_', ' ') | title }}
+                </span>
+            </div>
+        </div>
+        <div class="profile-body">
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Email</label>
+                    <span>{{ profile_user.email }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Phone</label>
+                    <span>{{ profile_user.phone or 'Not set' }}</span>
+                </div>
+                {% if faculty %}
+                <div class="info-item">
+                    <label>Faculty</label>
+                    <span>{{ faculty.name }}</span>
+                </div>
+                {% endif %}
+                {% if department %}
+                <div class="info-item">
+                    <label>Department</label>
+                    <span>{{ department.name }}</span>
+                </div>
+                {% endif %}
+                {% if batch %}
+                <div class="info-item">
+                    <label>Batch</label>
+                    <span>{{ batch.name }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Teacher Subjects -->
+    {% if teacher_subjects %}
+    <div class="section-card">
+        <h3><i class="fas fa-book" style="color:#10b981;"></i> My Subjects</h3>
+        <div class="row g-2">
+            {% for ts in teacher_subjects %}
+            <div class="col-md-6">
+                <div class="d-flex align-items-center gap-2 p-2 rounded"
+                    style="background:var(--bg-secondary);border:1px solid var(--border-color);">
+                    <div
+                        style="width:36px;height:36px;border-radius:8px;background:rgba(16,185,129,0.15);color:#10b981;display:flex;align-items:center;justify-content:center;">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight:600;font-size:0.9rem;">{{ ts.subject_name }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Upload Profile Image -->
+    <div class="section-card">
+        <h3><i class="fas fa-camera" style="color:#8b5cf6;"></i> Profile Image</h3>
+        <form method="POST" action="{{ url_for('main_bp.upload_profile_image') }}" enctype="multipart/form-data">
+            <div class="img-upload-area">
+                <input type="file" name="profile_image" accept="image/png,image/jpeg,image/gif,image/webp"
+                    class="form-control" style="max-width:300px;">
+                <button type="submit" class="btn-save"><i class="fas fa-upload me-1"></i> Upload</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Edit Profile -->
+    <div class="section-card">
+        <h3><i class="fas fa-pen" style="color:#3b82f6;"></i> Edit Profile</h3>
+        <form method="POST" action="{{ url_for('main_bp.profile') }}">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Display Name</label>
+                    <input type="text" name="name" value="{{ profile_user.name }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" name="phone" value="{{ profile_user.phone or '' }}"
+                        placeholder="+967 xxx xxx xxx">
+                </div>
+            </div>
+            <button type="submit" class="btn-save"><i class="fas fa-check me-1"></i> Save Changes</button>
+        </form>
+    </div>
+
+    <!-- Change Password -->
+    <div class="section-card">
+        <h3><i class="fas fa-lock" style="color:#ef4444;"></i> Change Password</h3>
+        <form method="POST" action="{{ url_for('main_bp.change_password') }}">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Current Password</label>
+                    <input type="password" name="current_password" required autocomplete="current-password">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" name="new_password" required minlength="6" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" name="confirm_password" required minlength="6" autocomplete="new-password">
+                </div>
+            </div>
+            <button type="submit" class="btn-danger"><i class="fas fa-key me-1"></i> Change Password</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

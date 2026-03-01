@@ -1,13 +1,17 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, send_from_directory
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, send_from_directory, current_app
 from app.utils.auth import get_current_user, login_user, logout_user
 from app.models.user import User
 from app.models.news import News
 from app.models.subject import Subject
 from app.models.lecture import Lecture
 from app.models.faculty import Faculty
+from app.models.department import Department
 from app.models.batch import Batch
+from app.models.teacher_subject import TeacherSubject
 from app.utils.gemini_ai import generate_response
-import os
+from werkzeug.security import generate_password_hash
+from werkzeug.utils import secure_filename
+import os, uuid
 
 main_bp = Blueprint('main_bp', __name__)
 
@@ -275,3 +279,156 @@ def _redirect_to_dashboard(user):
         return redirect(url_for('student_bp.dashboard'))
     
     return redirect(url_for('main_bp.index'))
+
+
+# ===== PROFILE MANAGEMENT =====
+
+ALLOWED_IMG_EXT = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+def _allowed_image(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_IMG_EXT
+
+
+@main_bp.route('/profile', methods=['GET', 'POST'])
+def profile():
+    """View and edit own profile — works for every role."""
+    user = get_current_user()
+    if not user:
+        flash('Please log in first.', 'danger')
+        return redirect(url_for('main_bp.login'))
+    
+    if request.method == 'POST':
+        update_data = {
+            'name': request.form.get('name', user['name']).strip(),
+            'phone': request.form.get('phone', user.get('phone', '')).strip(),
+        }
+        User.update(user['id'], update_data)
+        # Refresh session name
+        session['user_name'] = update_data['name']
+        flash('Profile updated!', 'success')
+        return redirect(url_for('main_bp.profile'))
+    
+    # Gather scope info for display
+    faculty = Faculty.find_by_id(user.get('faculty_id')) if user.get('faculty_id') else None
+    department = Department.find_by_id(user.get('department_id')) if user.get('department_id') else None
+    batch = Batch.find_by_id(user.get('batch_id')) if user.get('batch_id') else None
+    
+    # For teachers, get their subjects
+    teacher_subjects = []
+    if user.get('role') == User.ROLE_TEACHER:
+        teacher_subjects = TeacherSubject.get_by_teacher(user['id'])
+    
+    return render_template('profile.html', profile_user=user, faculty=faculty,
+                           department=department, batch=batch,
+                           teacher_subjects=teacher_subjects)
+
+
+@main_bp.route('/profile/password', methods=['POST'])
+def change_password():
+    """Change own password."""
+    user = get_current_user()
+    if not user:
+        flash('Please log in first.', 'danger')
+        return redirect(url_for('main_bp.login'))
+    
+    current_pw = request.form.get('current_password', '')
+    new_pw = request.form.get('new_password', '')
+    confirm_pw = request.form.get('confirm_password', '')
+    
+    if not current_pw or not new_pw:
+        flash('All password fields are required.', 'danger')
+        return redirect(url_for('main_bp.profile'))
+    
+    if new_pw != confirm_pw:
+        flash('New passwords do not match.', 'danger')
+        return redirect(url_for('main_bp.profile'))
+    
+    if len(new_pw) < 6:
+        flash('Password must be at least 6 characters.', 'danger')
+        return redirect(url_for('main_bp.profile'))
+    
+    if not User.check_password(user, current_pw):
+        flash('Current password is incorrect.', 'danger')
+        return redirect(url_for('main_bp.profile'))
+    
+    User.update(user['id'], {'password_hash': generate_password_hash(new_pw)})
+    flash('Password changed successfully!', 'success')
+    return redirect(url_for('main_bp.profile'))
+
+
+@main_bp.route('/profile/image', methods=['POST'])
+def upload_profile_image():
+    """Upload profile image."""
+    user = get_current_user()
+    if not user:
+        flash('Please log in first.', 'danger')
+        return redirect(url_for('main_bp.login'))
+    
+    if 'profile_image' not in request.files:
+        flash('No file selected.', 'danger')
+        return redirect(url_for('main_bp.profile'))
+    
+    file = request.files['profile_image']
+    if file.filename == '':
+        flash('No file selected.', 'danger')
+        return redirect(url_for('main_bp.profile'))
+    
+    if file and _allowed_image(file.filename):
+        ext = file.filename.rsplit('.', 1)[1].lower()
+        filename = f"profile_{user['id'][:8]}_{uuid.uuid4().hex[:6]}.{ext}"
+        upload_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'profiles')
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        filepath = os.path.join(upload_dir, filename)
+        file.save(filepath)
+        
+        # Delete old image if exists
+        old_img = user.get('profile_image', '')
+        if old_img:
+            old_path = os.path.join(current_app.root_path, 'static', old_img)
+            if os.path.exists(old_path):
+                try:
+                    os.remove(old_path)
+                except:
+                    pass
+        
+        relative_path = f"uploads/profiles/{filename}"
+        User.update(user['id'], {'profile_image': relative_path})
+        flash('Profile image updated!', 'success')
+    else:
+        flash('Invalid file type. Use PNG, JPG, GIF, or WebP.', 'danger')
+    
+    return redirect(url_for('main_bp.profile'))
+
+
+# ===== PUBLIC TEACHER PROFILE =====
+
+@main_bp.route('/teachers/<teacher_id>')
+def teacher_public_profile(teacher_id):
+    """Public teacher profile page."""
+    teacher = User.find_by_id(teacher_id)
+    if not teacher or teacher.get('role') != User.ROLE_TEACHER:
+        flash('Teacher not found.', 'danger')
+        return redirect(url_for('main_bp.index'))
+    
+    # Get teacher's subjects
+    subjects = TeacherSubject.get_by_teacher(teacher_id)
+    
+    # Group by subject (avoid duplicates from multiple batches)
+    unique_subjects = {}
+    for ts in subjects:
+        sid = ts.get('subject_id')
+        if sid not in unique_subjects:
+            unique_subjects[sid] = {
+                'name': ts.get('subject_name', ''),
+                'batches': []
+            }
+        batch = Batch.find_by_id(ts.get('batch_id'))
+        if batch:
+            unique_subjects[sid]['batches'].append(batch.get('name', ''))
+    
+    faculty = Faculty.find_by_id(teacher.get('faculty_id')) if teacher.get('faculty_id') else None
+    
+    return render_template('teacher_profile.html', teacher=teacher,
+                           subjects=list(unique_subjects.values()),
+                           faculty=faculty)

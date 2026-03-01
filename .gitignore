@@ -38,3 +38,7 @@ ecosystem.config.js
 
 # Load test
 load_test.py
+
+# Test guide (contains credentials)
+TEST_GUIDE.md
+test_*.py

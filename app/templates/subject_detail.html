@@ -28,7 +28,7 @@
                         <h5>Description</h5>
                         <p>{{ subject.description }}</p>
                     </div>
-                    
+
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <div class="card">
@@ -41,7 +41,14 @@
                                         </li>
                                         <li class="list-group-item d-flex justify-content-between">
                                             <span>Instructor:</span>
+                                            {% if subject.teacher_id %}
+                                            <a href="{{ url_for('main_bp.teacher_public_profile', teacher_id=subject.teacher_id) }}"
+                                                class="text-decoration-none fw-bold" style="color:#10b981;">
+                                                <i class="fas fa-chalkboard-teacher me-1"></i>{{ subject.instructor }}
+                                            </a>
+                                            {% else %}
                                             <strong>{{ subject.instructor }}</strong>
+                                            {% endif %}
                                         </li>
                                     </ul>
                                 </div>
@@ -69,13 +76,15 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     {% if session.get('is_admin') %}
                     <div class="admin-actions mt-4 pt-3 border-top">
                         <a href="{{ url_for('admin_bp.edit_subject', subject_id=subject.id) }}" class="btn btn-primary">
                             <i class="fas fa-edit me-2"></i>Edit Subject
                         </a>
-                        <form action="{{ url_for('admin_bp.delete_subject', subject_id=subject.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this subject? This action cannot be undone.');">
+                        <form action="{{ url_for('admin_bp.delete_subject', subject_id=subject.id) }}" method="POST"
+                            style="display: inline;"
+                            onsubmit="return confirm('Are you sure you want to delete this subject? This action cannot be undone.');">
                             <button type="submit" class="btn btn-danger">
                                 <i class="fas fa-trash-alt me-2"></i>Delete Subject
                             </button>
@@ -84,105 +93,115 @@
                     {% endif %}
                 </div>
             </div>
-            
+
             <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="mb-0">Lectures</h5>
                 </div>
                 <div class="card-body">
                     {% if lectures %}
-                        <!-- Group lectures by week -->
-                        {% set weeks = {} %}
-                        {% for lecture in lectures %}
-                            {% if lecture.week not in weeks %}
-                                {% set _ = weeks.update({lecture.week: []}) %}
-                            {% endif %}
-                            {% set _ = weeks[lecture.week].append(lecture) %}
-                        {% endfor %}
-                        
-                        <!-- Display lectures in accordion by week -->
-                        <div class="accordion" id="lecturesAccordion">
-                            {% for week, week_lectures in weeks|dictsort %}
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header" id="week{{ week }}Heading">
-                                        <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#week{{ week }}Collapse" aria-expanded="{% if loop.first %}true{% else %}false{% endif %}" aria-controls="week{{ week }}Collapse">
-                                            Week {{ week }} <span class="badge bg-primary ms-2">{{ week_lectures|length }}</span>
-                                        </button>
-                                    </h2>
-                                    <div id="week{{ week }}Collapse" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="week{{ week }}Heading" data-bs-parent="#lecturesAccordion">
-                                        <div class="accordion-body p-0">
-                                            <div class="list-group">
-                                                {% for lecture in week_lectures %}
-                                                    <div class="list-group-item">
-                                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                                            <div class="flex-grow-1">
-                                                                <h6 class="mb-1">{{ lecture.description }}</h6>
-                                                                <small class="text-muted">
-                                                                    <i class="far fa-calendar-alt me-1"></i>{{ lecture.created_at[:10] if lecture.created_at else 'N/A' }}
-                                                                </small>
-                                                            </div>
-                                                        </div>
-                                                        <div class="d-flex justify-content-end">
-                                                            {% if lecture.file_name and lecture.file_path %}
-                                                                <a href="{{ url_for('main_bp.download_lecture_file', lecture_id=lecture.id) }}" class="btn btn-sm btn-success">
-                                                                    <i class="fas fa-download me-1"></i>Download {{ lecture.file_name|truncate(20) }}
-                                                                </a>
-                                                            {% else %}
-                                                                <span class="badge bg-secondary">No file available</span>
-                                                            {% endif %}
-                                                        </div>
-                                                    </div>
-                                                {% endfor %}
+                    <!-- Group lectures by week -->
+                    {% set weeks = {} %}
+                    {% for lecture in lectures %}
+                    {% if lecture.week not in weeks %}
+                    {% set _ = weeks.update({lecture.week: []}) %}
+                    {% endif %}
+                    {% set _ = weeks[lecture.week].append(lecture) %}
+                    {% endfor %}
+
+                    <!-- Display lectures in accordion by week -->
+                    <div class="accordion" id="lecturesAccordion">
+                        {% for week, week_lectures in weeks|dictsort %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="week{{ week }}Heading">
+                                <button class="accordion-button {% if not loop.first %}collapsed{% endif %}"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#week{{ week }}Collapse"
+                                    aria-expanded="{% if loop.first %}true{% else %}false{% endif %}"
+                                    aria-controls="week{{ week }}Collapse">
+                                    Week {{ week }} <span class="badge bg-primary ms-2">{{ week_lectures|length
+                                        }}</span>
+                                </button>
+                            </h2>
+                            <div id="week{{ week }}Collapse"
+                                class="accordion-collapse collapse {% if loop.first %}show{% endif %}"
+                                aria-labelledby="week{{ week }}Heading" data-bs-parent="#lecturesAccordion">
+                                <div class="accordion-body p-0">
+                                    <div class="list-group">
+                                        {% for lecture in week_lectures %}
+                                        <div class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div class="flex-grow-1">
+                                                    <h6 class="mb-1">{{ lecture.description }}</h6>
+                                                    <small class="text-muted">
+                                                        <i class="far fa-calendar-alt me-1"></i>{{
+                                                        lecture.created_at[:10] if lecture.created_at else 'N/A' }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex justify-content-end">
+                                                {% if lecture.file_name and lecture.file_path %}
+                                                <a href="{{ url_for('main_bp.download_lecture_file', lecture_id=lecture.id) }}"
+                                                    class="btn btn-sm btn-success">
+                                                    <i class="fas fa-download me-1"></i>Download {{
+                                                    lecture.file_name|truncate(20) }}
+                                                </a>
+                                                {% else %}
+                                                <span class="badge bg-secondary">No file available</span>
+                                                {% endif %}
                                             </div>
                                         </div>
+                                        {% endfor %}
                                     </div>
                                 </div>
-                            {% endfor %}
+                            </div>
                         </div>
+                        {% endfor %}
+                    </div>
                     {% else %}
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>No lectures available for this subject yet.
-                        </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>No lectures available for this subject yet.
+                    </div>
                     {% endif %}
-                    
+
                     {% if session.get('is_admin') %}
-                        <div class="mt-3">
-                            <a href="{{ url_for('admin_bp.add_lecture', subject_id=subject.id) }}" class="btn btn-primary">
-                                <i class="fas fa-plus me-2"></i>Add Lecture
-                            </a>
-                        </div>
+                    <div class="mt-3">
+                        <a href="{{ url_for('admin_bp.add_lecture', subject_id=subject.id) }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Add Lecture
+                        </a>
+                    </div>
                     {% endif %}
                 </div>
             </div>
         </div>
-        
+
         <div class="col-lg-4">
             {% if session.get('student_token') %}
-                <div class="card mb-4">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">Your Progress</h5>
-                    </div>
-                    <div class="card-body">
-                        <div id="student-progress">
-                            <div class="text-center">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Your Progress</h5>
+                </div>
+                <div class="card-body">
+                    <div id="student-progress">
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
             {% endif %}
-            
 
-            
+
+
             <div class="card">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">Ask AI Assistant</h5>
                 </div>
                 <div class="card-body">
                     <p class="card-text">Have questions about this subject?</p>
-                    <a href="{{ url_for('main_bp.chatbot') }}?subject={{ subject.code }}" class="btn btn-outline-primary w-100">
+                    <a href="{{ url_for('main_bp.chatbot') }}?subject={{ subject.code }}"
+                        class="btn btn-outline-primary w-100">
                         <i class="fas fa-robot me-2"></i>Chat with AI Assistant
                     </a>
                 </div>
@@ -194,8 +213,8 @@
 
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        
+    document.addEventListener('DOMContentLoaded', function () {
+
         // Fetch student progress if logged in
         const studentProgressElement = document.getElementById('student-progress');
         if (studentProgressElement) {
@@ -204,9 +223,9 @@
                 .then(data => {
                     if (data.status === 'success') {
                         const progress = data.progress;
-                        
+
                         let progressHTML = '';
-                        
+
                         // Attendance
                         progressHTML += `<div class="mb-3">
                             <h6>Attendance</h6>
@@ -217,13 +236,13 @@
                                 </div>
                             </div>
                         </div>`;
-                        
+
                         // Grades
                         progressHTML += `<div class="mb-3">
                             <h6>Current Grade</h6>
                             <h3 class="text-center">${progress.grade || 'N/A'}</h3>
                         </div>`;
-                        
+
                         // Completed lectures
                         progressHTML += `<div>
                             <h6>Completed Lectures</h6>
@@ -234,7 +253,7 @@
                                 </div>
                             </div>
                         </div>`;
-                        
+
                         studentProgressElement.innerHTML = progressHTML;
                     } else {
                         studentProgressElement.innerHTML = '<p class="text-center">No progress data available.</p>';
@@ -247,4 +266,4 @@
         }
     });
 </script>
-{% endblock %} 
+{% endblock %}
