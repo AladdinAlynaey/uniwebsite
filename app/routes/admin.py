@@ -442,15 +442,37 @@ def delete_subject(subject_id):
 @login_required
 def news():
     """Manage news"""
+    from app.utils.auth import get_current_user
+    from app.models.faculty import Faculty
+    from app.models.batch import Batch
+    user = get_current_user()
+    
     if request.method == 'POST':
         title = request.form.get('title')
         content = request.form.get('content')
         
-        # Create news record
-        news_item = News.create({
+        # Build news with faculty/batch scoping from current user
+        news_data = {
             'title': title,
-            'content': content
-        })
+            'content': content,
+            'created_by': user.get('name', 'Admin'),
+            'created_by_role': user.get('role', 'batch_rep'),
+        }
+        
+        # Add faculty context
+        if user.get('faculty_id'):
+            news_data['faculty_id'] = user['faculty_id']
+            fac = Faculty.find_by_id(user['faculty_id'])
+            news_data['faculty_name'] = fac.get('name', '') if fac else ''
+        
+        # Add batch context
+        if user.get('batch_id'):
+            news_data['batch_id'] = user['batch_id']
+            batch = Batch.find_by_id(user['batch_id'])
+            news_data['batch_name'] = batch.get('name', '') if batch else ''
+        
+        # Create news record
+        news_item = News.create(news_data)
         
         # Send Telegram notification
         notify_new_news(news_item)
@@ -461,7 +483,13 @@ def news():
         flash('News item created successfully!', 'success')
         return redirect(url_for('admin_bp.news'))
     
-    all_news = News.load_all()
+    # Show news scoped to user's batch/faculty
+    if user.get('batch_id'):
+        all_news = News.get_by_batch(user['batch_id'])
+    elif user.get('faculty_id'):
+        all_news = News.get_by_faculty(user['faculty_id'])
+    else:
+        all_news = News.load_all()
     return render_template('admin/news.html', news=all_news)
 
 @admin_bp.route('/news/<string:news_id>/edit', methods=['GET', 'POST'])
@@ -516,6 +544,10 @@ def delete_news(news_id):
 @login_required
 def students():
     """Manage students"""
+    from app.utils.auth import get_current_user
+    from app.models.batch import Batch
+    user = get_current_user()
+    
     if request.method == 'POST':
         name = request.form.get('name')
         major = request.form.get('major')
@@ -536,7 +568,15 @@ def students():
         return redirect(url_for('admin_bp.students'))
     
     all_students = Student.load_all()
-    return render_template('admin/students.html', students=all_students)
+    
+    # Get batch rep ID for star icon
+    batch_rep_id = None
+    if user.get('batch_id'):
+        batch = Batch.find_by_id(user['batch_id'])
+        if batch:
+            batch_rep_id = batch.get('rep_id')
+    
+    return render_template('admin/students.html', students=all_students, batch_rep_id=batch_rep_id)
 
 
 @admin_bp.route('/students/<string:student_id>/edit', methods=['GET', 'POST'])
@@ -1121,4 +1161,68 @@ def download_assignment_file(filepath):
         flash('File not found.', 'danger')
         return redirect(url_for('admin_bp.assignments'))
     
-    return send_file(file_path, as_attachment=True) 
+    return send_file(file_path, as_attachment=True)
+
+
+# ===== BATCH REP STUDENT CAPABILITIES =====
+
+@admin_bp.route('/my-grades')
+@login_required
+def my_grades():
+    """Batch rep views their own grades (they are students too)."""
+    from app.utils.auth import get_current_user
+    user = get_current_user()
+    
+    # Get all subjects in the rep's batch
+    subjects = Subject.load_all()
+    if user.get('batch_id'):
+        batch_subjects = [s for s in subjects if user.get('batch_id') in s.get('batch_ids', [])]
+        if not batch_subjects:
+            batch_subjects = subjects  # Fallback
+    else:
+        batch_subjects = subjects
+    
+    # Get grades for this user
+    grades_by_subject = {}
+    for subject in batch_subjects:
+        if subject and 'id' in subject:
+            grade_records = Grade.get_by_student_and_subject(user['id'], subject['id'])
+            grades_by_subject[subject['id']] = grade_records
+    
+    return render_template(
+        'student/grades.html',
+        student=user,
+        subjects=batch_subjects,
+        grades_by_subject=grades_by_subject
+    )
+
+
+@admin_bp.route('/my-attendance')
+@login_required
+def my_attendance():
+    """Batch rep views their own attendance (they are students too)."""
+    from app.utils.auth import get_current_user
+    user = get_current_user()
+    
+    # Get all subjects in the rep's batch
+    subjects = Subject.load_all()
+    if user.get('batch_id'):
+        batch_subjects = [s for s in subjects if user.get('batch_id') in s.get('batch_ids', [])]
+        if not batch_subjects:
+            batch_subjects = subjects  # Fallback
+    else:
+        batch_subjects = subjects
+    
+    # Get attendance for this user
+    attendance_by_subject = {}
+    for subject in batch_subjects:
+        if subject and 'id' in subject:
+            attendance_records = Attendance.get_by_student_and_subject(user['id'], subject['id'])
+            attendance_by_subject[subject['id']] = attendance_records
+    
+    return render_template(
+        'student/attendance.html',
+        student=user,
+        subjects=batch_subjects,
+        attendance_by_subject=attendance_by_subject
+    )

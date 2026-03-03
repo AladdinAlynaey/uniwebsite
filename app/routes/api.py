@@ -49,6 +49,10 @@ def chatbot():
     student_token = session.get('student_token')  # Get token from session
     logger.info(f"Processing query: {query}")
     
+    # Get full user for role-aware context
+    from app.utils.auth import get_current_user
+    current_user = get_current_user()
+    
     # Get existing chat history from session
     if 'chat_history' not in session:
         session['chat_history'] = []
@@ -61,7 +65,7 @@ def chatbot():
     
     # Generate response with conversation history
     try:
-        response = generate_response(query, student_token, chat_history)
+        response = generate_response(query, student_token, chat_history, user=current_user)
         logger.info(f"Generated response: {response[:100]}...")
     except Exception as e:
         logger.error(f"Error generating response: {str(e)}")

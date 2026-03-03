@@ -213,6 +213,16 @@
                                 class="fas fa-tasks"></i><span>Assignments</span></a>
                         <a href="{{ url_for('admin_bp.news') }}" class="dropdown-link"><i
                                 class="fas fa-newspaper"></i><span>News</span></a>
+                        <div class="dropdown-divider"></div>
+                        <div class="dropdown-header" style="font-size:0.7rem;padding:0.3rem 1rem;">
+                            <i class="fas fa-user-graduate me-2" style="color:#06b6d4;"></i>
+                            <span>My Student Data</span>
+                        </div>
+                        <a href="{{ url_for('admin_bp.my_grades') }}" class="dropdown-link"><i
+                                class="fas fa-chart-line"></i><span>My Grades</span></a>
+                        <a href="{{ url_for('admin_bp.my_attendance') }}" class="dropdown-link"><i
+                                class="fas fa-calendar-check"></i><span>My Attendance</span></a>
+                        <div class="dropdown-divider"></div>
                         <a href="{{ url_for('main_bp.profile') }}" class="dropdown-link"><i
                                 class="fas fa-user-circle"></i><span>My Profile</span></a>
                         <div class="dropdown-divider"></div>

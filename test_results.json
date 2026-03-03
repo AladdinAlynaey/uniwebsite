@@ -1,0 +1,2223 @@
+{
+  "timestamp": "2026-03-03T12:56:40",
+  "total_tests": 314,
+  "total_pass": 110,
+  "total_fail": 204,
+  "pass_rate": 35.0,
+  "results": {
+    "public": [
+      {
+        "path": "/",
+        "status": 200,
+        "access": "ALLOWED",
+        "passed": true
+      },
+      {
+        "path": "/news",
+        "status": 200,
+        "access": "ALLOWED",
+        "passed": true
+      },
+      {
+        "path": "/subjects",
+        "status": 200,
+        "access": "ALLOWED",
+        "passed": true
+      },
+      {
+        "path": "/chatbot",
+        "status": 200,
+        "access": "ALLOWED",
+        "passed": true
+      }
+    ],
+    "super_admin": [
+      {
+        "user": "Super Admin",
+        "email": "admin@university.edu",
+        "faculty": "ALL",
+        "login": true,
+        "tests": [
+          {
+            "path": "/superadmin/dashboard",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/faculty/dashboard",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/teacher/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/dashboard",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/students",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/lectures",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/news",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-grades",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-attendance",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/student/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/profile",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          }
+        ]
+      }
+    ],
+    "faculty_head": [
+      {
+        "user": "Prof. Mohammed Al-Qadhi",
+        "email": "dean.aiit@university.edu",
+        "faculty": "AIIT",
+        "login": true,
+        "tests": [
+          {
+            "path": "/superadmin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/faculty/dashboard",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/teacher/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/students",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/lectures",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/news",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/profile",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          }
+        ]
+      },
+      {
+        "user": "Prof. Khalid Al-Amin",
+        "email": "dean.eng@university.edu",
+        "faculty": "ENG",
+        "login": true,
+        "tests": [
+          {
+            "path": "/superadmin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/faculty/dashboard",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/teacher/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/students",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/lectures",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/news",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/profile",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          }
+        ]
+      }
+    ],
+    "teacher": [
+      {
+        "user": "Dr. Amin Shayea",
+        "email": "amin.shayea@university.edu",
+        "faculty": "AIIT",
+        "login": true,
+        "tests": [
+          {
+            "path": "/superadmin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/faculty/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/teacher/dashboard",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/students",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/lectures",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/news",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/profile",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          }
+        ]
+      },
+      {
+        "user": "Mr. Mohammed Alqumasi",
+        "email": "mohammed.alqumasi@university.edu",
+        "faculty": "AIIT",
+        "login": true,
+        "tests": [
+          {
+            "path": "/superadmin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/faculty/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/teacher/dashboard",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/students",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/lectures",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/news",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/profile",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          }
+        ]
+      },
+      {
+        "user": "Mr. Mohaned Al-Mashriqi",
+        "email": "mohaned.almashriqi@university.edu",
+        "faculty": "AIIT",
+        "login": true,
+        "tests": [
+          {
+            "path": "/superadmin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/faculty/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/teacher/dashboard",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/students",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/lectures",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/news",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/profile",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          }
+        ]
+      },
+      {
+        "user": "Mr. Omeir Albadani",
+        "email": "omeir.albadani@university.edu",
+        "faculty": "AIIT",
+        "login": true,
+        "tests": [
+          {
+            "path": "/superadmin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/faculty/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/teacher/dashboard",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/students",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/lectures",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/news",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/profile",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          }
+        ]
+      },
+      {
+        "user": "Prof. Ahmed Sultan",
+        "email": "ahmed.sultan@university.edu",
+        "faculty": "AIIT",
+        "login": true,
+        "tests": [
+          {
+            "path": "/superadmin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/faculty/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/teacher/dashboard",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/students",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/lectures",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/news",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/profile",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          }
+        ]
+      },
+      {
+        "user": "Mr. Hamdan Talib",
+        "email": "hamdan.talib@university.edu",
+        "faculty": "AIIT",
+        "login": true,
+        "tests": [
+          {
+            "path": "/superadmin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/faculty/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/teacher/dashboard",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/students",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/lectures",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/news",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/profile",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          }
+        ]
+      },
+      {
+        "user": "Dr. Nabil Saleh",
+        "email": "nabil.saleh@university.edu",
+        "faculty": "ENG",
+        "login": true,
+        "tests": [
+          {
+            "path": "/superadmin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/faculty/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/teacher/dashboard",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/students",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/lectures",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/news",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/profile",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          }
+        ]
+      },
+      {
+        "user": "Dr. Layla Hassan",
+        "email": "layla.hassan@university.edu",
+        "faculty": "ENG",
+        "login": true,
+        "tests": [
+          {
+            "path": "/superadmin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/faculty/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/teacher/dashboard",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/students",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/lectures",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/news",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/profile",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          }
+        ]
+      }
+    ],
+    "batch_rep": [
+      {
+        "user": "Alaadin",
+        "email": "rep.alaadin@university.edu",
+        "faculty": "AIIT",
+        "login": true,
+        "tests": [
+          {
+            "path": "/superadmin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/faculty/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/teacher/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/dashboard",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/students",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/lectures",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/news",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-grades",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-attendance",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/student/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/profile",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          }
+        ]
+      },
+      {
+        "user": "Ahmed Test",
+        "email": "rep.test@university.edu",
+        "faculty": "AIIT",
+        "login": true,
+        "tests": [
+          {
+            "path": "/superadmin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/faculty/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/teacher/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/dashboard",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/students",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/lectures",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/news",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-grades",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-attendance",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/student/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/profile",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          }
+        ]
+      },
+      {
+        "user": "Ali Mohammed",
+        "email": "rep.ce@university.edu",
+        "faculty": "ENG",
+        "login": true,
+        "tests": [
+          {
+            "path": "/superadmin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/faculty/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/teacher/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/dashboard",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/students",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/lectures",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/news",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-grades",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-attendance",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/student/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/profile",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          }
+        ]
+      }
+    ],
+    "student": [
+      {
+        "user": "Yusuf Ali Hassan",
+        "email": "yusuf.ali@student.university.edu",
+        "faculty": "AIIT",
+        "login": true,
+        "tests": [
+          {
+            "path": "/superadmin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/faculty/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/teacher/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/students",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/lectures",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/news",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/dashboard",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/student/grades",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/student/attendance",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/profile",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          }
+        ]
+      },
+      {
+        "user": "Fatima Mohammed Said",
+        "email": "fatima.mohammed@student.university.edu",
+        "faculty": "AIIT",
+        "login": true,
+        "tests": [
+          {
+            "path": "/superadmin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/faculty/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/teacher/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/students",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/lectures",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/news",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/dashboard",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/student/grades",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/student/attendance",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/profile",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          }
+        ]
+      },
+      {
+        "user": "Omar Khalid Nasser",
+        "email": "omar.khalid@student.university.edu",
+        "faculty": "AIIT",
+        "login": true,
+        "tests": [
+          {
+            "path": "/superadmin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/faculty/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/teacher/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/students",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/lectures",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/news",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/dashboard",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/student/grades",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/student/attendance",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/profile",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          }
+        ]
+      },
+      {
+        "user": "Maryam Saleh Ahmed",
+        "email": "maryam.saleh@student.university.edu",
+        "faculty": "AIIT",
+        "login": true,
+        "tests": [
+          {
+            "path": "/superadmin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/faculty/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/teacher/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/students",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/lectures",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/news",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/dashboard",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/student/grades",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/student/attendance",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/profile",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          }
+        ]
+      },
+      {
+        "user": "Hassan Ibrahim Taher",
+        "email": "hassan.ibrahim@student.university.edu",
+        "faculty": "AIIT",
+        "login": true,
+        "tests": [
+          {
+            "path": "/superadmin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/faculty/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/teacher/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/students",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/lectures",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/news",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/dashboard",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/student/grades",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/student/attendance",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/profile",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          }
+        ]
+      },
+      {
+        "user": "Tariq Omar Saleh",
+        "email": "tariq.omar@student.university.edu",
+        "faculty": "ENG",
+        "login": true,
+        "tests": [
+          {
+            "path": "/superadmin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/faculty/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/teacher/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/students",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/lectures",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/news",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/dashboard",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/student/grades",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/student/attendance",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/profile",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          }
+        ]
+      },
+      {
+        "user": "Nada Khalid Ali",
+        "email": "nada.khalid@student.university.edu",
+        "faculty": "ENG",
+        "login": true,
+        "tests": [
+          {
+            "path": "/superadmin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/faculty/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/teacher/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/students",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/lectures",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/news",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/dashboard",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/student/grades",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/student/attendance",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/profile",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          }
+        ]
+      },
+      {
+        "user": "Majid Yusuf Hassan",
+        "email": "majid.yusuf@student.university.edu",
+        "faculty": "ENG",
+        "login": true,
+        "tests": [
+          {
+            "path": "/superadmin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/faculty/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/teacher/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/dashboard",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/students",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/lectures",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/news",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-grades",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/admin/my-attendance",
+            "expected": "DENY",
+            "actual": "ALLOW",
+            "passed": false,
+            "status": 200
+          },
+          {
+            "path": "/student/dashboard",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/student/grades",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/student/attendance",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          },
+          {
+            "path": "/profile",
+            "expected": "ALLOW",
+            "actual": "ALLOW",
+            "passed": true,
+            "status": 200
+          }
+        ]
+      }
+    ]
+  }
+}

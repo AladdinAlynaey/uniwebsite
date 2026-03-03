@@ -38,8 +38,16 @@ def index():
 
 @main_bp.route('/news')
 def news():
-    """News page"""
-    all_news = News.get_latest_news()
+    """News page — scoped to user's faculty when logged in."""
+    from app.utils.auth import get_current_user, get_user_scope
+    user = get_current_user()
+    
+    if user:
+        scope = get_user_scope(user)
+        all_news = News.get_latest_news(faculty_id=scope.get('faculty_id'))
+    else:
+        all_news = News.get_latest_news()
+    
     return render_template('news.html', news=all_news)
 
 @main_bp.route('/news/<string:news_id>')
@@ -247,8 +255,12 @@ def chatbot():
         query = request.form.get('query')
         student_token = session.get('student_token')
         
+        # Get full user for role-aware context
+        from app.utils.auth import get_current_user
+        current_user = get_current_user()
+        
         if query:
-            response = generate_response(query, student_token)
+            response = generate_response(query, student_token, user=current_user)
             
             if response is None:
                 response = "I'm sorry, I couldn't generate a response at this time."

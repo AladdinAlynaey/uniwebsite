@@ -35,133 +35,146 @@
 <section class="news-content-section">
     <div class="container">
         {% if news %}
-            <!-- Featured News Spotlight -->
-            <div class="featured-spotlight mb-5">
-                <div class="spotlight-header mb-4">
-                    <div class="spotlight-label-wrapper">
-                        <div class="spotlight-label">
-                            <i class="fas fa-star me-2"></i>
-                            <span>Featured News</span>
-                        </div>
-                        <div class="spotlight-trending">
-                            <i class="fas fa-fire-alt"></i>
-                            <span>Trending Now</span>
-                        </div>
+        <!-- Featured News Spotlight -->
+        <div class="featured-spotlight mb-5">
+            <div class="spotlight-header mb-4">
+                <div class="spotlight-label-wrapper">
+                    <div class="spotlight-label">
+                        <i class="fas fa-star me-2"></i>
+                        <span>Featured News</span>
                     </div>
-                </div>
-                <div class="row g-0">
-                    <div class="col-lg-5">
-                        <div class="spotlight-visual">
-                            <div class="spotlight-badge-hot">
-                                <i class="fas fa-bolt"></i>
-                                <span>Breaking</span>
-                            </div>
-                            <div class="spotlight-icon-wrapper">
-                                <div class="spotlight-icon-bg"></div>
-                                <i class="fas fa-newspaper"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-7">
-                        <div class="spotlight-content">
-                            <div class="spotlight-meta">
-                                <span class="meta-date">
-                                    <i class="fas fa-calendar-alt"></i>
-                                    {{ news[0].created_at[:10] }}
-                                </span>
-                                <span class="meta-tag">Latest News</span>
-                                <span class="meta-views">
-                                    <i class="fas fa-eye"></i>
-                                    New
-                                </span>
-                            </div>
-                            <h2 class="spotlight-title">{{ news[0].title }}</h2>
-                            <p class="spotlight-excerpt">
-                                {% if news[0].content|length > 250 %}
-                                    {{ news[0].content[:250] }}...
-                                {% else %}
-                                    {{ news[0].content }}
-                                {% endif %}
-                            </p>
-                            <a href="{{ url_for('main_bp.news_detail', news_id=news[0].id) }}" class="btn-spotlight">
-                                <span>Read Full News</span>
-                                <i class="fas fa-arrow-right"></i>
-                            </a>
-                        </div>
+                    <div class="spotlight-trending">
+                        <i class="fas fa-fire-alt"></i>
+                        <span>Trending Now</span>
                     </div>
                 </div>
             </div>
-
-            <!-- Recent News Grid -->
-            <div class="news-grid-header mb-5">
-                <div class="row align-items-center">
-                    <div class="col-lg-8">
-                        <div class="grid-header-badge mb-3">
-                            <i class="fas fa-clock me-2"></i>
-                            <span>Recent Updates</span>
+            <div class="row g-0">
+                <div class="col-lg-5">
+                    <div class="spotlight-visual">
+                        <div class="spotlight-badge-hot">
+                            <i class="fas fa-bolt"></i>
+                            <span>Breaking</span>
                         </div>
-                        <h2 class="grid-header-title">All Latest News</h2>
-                    </div>
-                    <div class="col-lg-4 text-lg-end">
-                        <div class="news-counter">
-                            <span class="counter-number" id="newsCount">{{ news|length - 1 }}</span>
-                            <span class="counter-label">News</span>
+                        <div class="spotlight-icon-wrapper">
+                            <div class="spotlight-icon-bg"></div>
+                            <i class="fas fa-newspaper"></i>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- News Grid with Load More -->
-            <div class="news-grid" id="newsGrid">
-                {% for item in news[1:] %}
-                <article class="news-card-modern" data-index="{{ loop.index }}">
-                    <div class="card-badge-modern">
-                        <i class="fas fa-newspaper"></i>
+                <div class="col-lg-7">
+                    <div class="spotlight-content">
+                        <div class="spotlight-meta">
+                            <span class="meta-date">
+                                <i class="fas fa-calendar-alt"></i>
+                                {{ news[0].created_at[:10] }}
+                            </span>
+                            {% if news[0].faculty_name %}
+                            <span class="meta-tag"><i class="fas fa-university me-1"></i>{{ news[0].faculty_name }}{% if
+                                news[0].batch_name %} → {{ news[0].batch_name }}{% endif %}</span>
+                            {% else %}
+                            <span class="meta-tag">University-wide</span>
+                            {% endif %}
+                            <span class="meta-views">
+                                <i class="fas fa-eye"></i>
+                                New
+                            </span>
+                        </div>
+                        <h2 class="spotlight-title">{{ news[0].title }}</h2>
+                        <p class="spotlight-excerpt">
+                            {% if news[0].content|length > 250 %}
+                            {{ news[0].content[:250] }}...
+                            {% else %}
+                            {{ news[0].content }}
+                            {% endif %}
+                        </p>
+                        <a href="{{ url_for('main_bp.news_detail', news_id=news[0].id) }}" class="btn-spotlight">
+                            <span>Read Full News</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
                     </div>
-                    <div class="card-date-modern">
-                        <i class="fas fa-calendar"></i>
-                        <span>{{ item.created_at[:10] }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent News Grid -->
+        <div class="news-grid-header mb-5">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="grid-header-badge mb-3">
+                        <i class="fas fa-clock me-2"></i>
+                        <span>Recent Updates</span>
                     </div>
-                    <h3 class="card-title-modern">{{ item.title }}</h3>
-                    <p class="card-excerpt-modern">
-                        {% if item.content|length > 130 %}
-                            {{ item.content[:130] }}...
-                        {% else %}
-                            {{ item.content }}
-                        {% endif %}
-                    </p>
-                    <a href="{{ url_for('main_bp.news_detail', news_id=item.id) }}" class="card-link-modern">
-                        <span>Read News</span>
-                        <i class="fas fa-arrow-right"></i>
-                    </a>
-                </article>
-                {% endfor %}
+                    <h2 class="grid-header-title">All Latest News</h2>
+                </div>
+                <div class="col-lg-4 text-lg-end">
+                    <div class="news-counter">
+                        <span class="counter-number" id="newsCount">{{ news|length - 1 }}</span>
+                        <span class="counter-label">News</span>
+                    </div>
+                </div>
             </div>
+        </div>
 
-            <!-- Load More Button -->
-            {% if news|length > 6 %}
-            <div class="load-more-section" id="loadMoreSection">
-                <button class="btn-load-more" id="loadMoreBtn">
-                    <span class="btn-text">Load More News</span>
-                    <span class="btn-count">({{ news|length - 6 }} remaining)</span>
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-            </div>
-            {% endif %}
-
-        {% else %}
-            <!-- Empty State -->
-            <div class="empty-state-modern">
-                <div class="empty-icon-wrapper">
+        <!-- News Grid with Load More -->
+        <div class="news-grid" id="newsGrid">
+            {% for item in news[1:] %}
+            <article class="news-card-modern" data-index="{{ loop.index }}">
+                <div class="card-badge-modern">
                     <i class="fas fa-newspaper"></i>
                 </div>
-                <h3 class="empty-title">No News Available Yet</h3>
-                <p class="empty-description">We'll post updates and announcements here soon. Check back later!</p>
-                <a href="{{ url_for('main_bp.index') }}" class="btn-empty-state">
-                    <i class="fas fa-home"></i>
-                    <span>Back to Home</span>
+                <div class="card-date-modern">
+                    <i class="fas fa-calendar"></i>
+                    <span>{{ item.created_at[:10] }}</span>
+                </div>
+                {% if item.faculty_name %}
+                <div class="card-source-badge"
+                    style="font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 0.35rem;">
+                    <i class="fas fa-university" style="color: #6366f1;"></i>
+                    {{ item.faculty_name }}{% if item.batch_name %} <i class="fas fa-angle-right"
+                        style="font-size:0.6rem;"></i> {{ item.batch_name }}{% endif %}
+                </div>
+                {% endif %}
+                <h3 class="card-title-modern">{{ item.title }}</h3>
+                <p class="card-excerpt-modern">
+                    {% if item.content|length > 130 %}
+                    {{ item.content[:130] }}...
+                    {% else %}
+                    {{ item.content }}
+                    {% endif %}
+                </p>
+                <a href="{{ url_for('main_bp.news_detail', news_id=item.id) }}" class="card-link-modern">
+                    <span>Read News</span>
+                    <i class="fas fa-arrow-right"></i>
                 </a>
+            </article>
+            {% endfor %}
+        </div>
+
+        <!-- Load More Button -->
+        {% if news|length > 6 %}
+        <div class="load-more-section" id="loadMoreSection">
+            <button class="btn-load-more" id="loadMoreBtn">
+                <span class="btn-text">Load More News</span>
+                <span class="btn-count">({{ news|length - 6 }} remaining)</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <!-- Empty State -->
+        <div class="empty-state-modern">
+            <div class="empty-icon-wrapper">
+                <i class="fas fa-newspaper"></i>
             </div>
+            <h3 class="empty-title">No News Available Yet</h3>
+            <p class="empty-description">We'll post updates and announcements here soon. Check back later!</p>
+            <a href="{{ url_for('main_bp.index') }}" class="btn-empty-state">
+                <i class="fas fa-home"></i>
+                <span>Back to Home</span>
+            </a>
+        </div>
         {% endif %}
     </div>
 </section>
@@ -169,56 +182,56 @@
 
 {% block extra_js %}
 <script>
-// Load More Functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const loadMoreBtn = document.getElementById('loadMoreBtn');
-    const newsCards = document.querySelectorAll('.news-card-modern');
-    let currentlyShown = 5;
-    const totalNews = newsCards.length;
-    
-    // Hide cards beyond the first 5
-    newsCards.forEach((card, index) => {
-        if (index >= 5) {
-            card.style.display = 'none';
-        }
-    });
-    
-    if (loadMoreBtn) {
-        loadMoreBtn.addEventListener('click', function() {
-            const nextBatch = Math.min(currentlyShown + 5, totalNews);
-            
-            // Show next 5 news with animation
-            for (let i = currentlyShown; i < nextBatch; i++) {
-                if (newsCards[i]) {
-                    newsCards[i].style.display = 'block';
-                    setTimeout(() => {
-                        newsCards[i].style.opacity = '0';
-                        newsCards[i].style.transform = 'translateY(20px)';
-                        setTimeout(() => {
-                            newsCards[i].style.transition = 'all 0.4s ease';
-                            newsCards[i].style.opacity = '1';
-                            newsCards[i].style.transform = 'translateY(0)';
-                        }, 10);
-                    }, (i - currentlyShown) * 100);
-                }
-            }
-            
-            currentlyShown = nextBatch;
-            
-            // Update button text
-            const remaining = totalNews - currentlyShown;
-            if (remaining > 0) {
-                loadMoreBtn.querySelector('.btn-count').textContent = `(${remaining} remaining)`;
-            } else {
-                // All news shown - hide button
-                loadMoreBtn.style.opacity = '0';
-                loadMoreBtn.style.transform = 'scale(0.9)';
-                setTimeout(() => {
-                    document.getElementById('loadMoreSection').style.display = 'none';
-                }, 300);
+    // Load More Functionality
+    document.addEventListener('DOMContentLoaded', function () {
+        const loadMoreBtn = document.getElementById('loadMoreBtn');
+        const newsCards = document.querySelectorAll('.news-card-modern');
+        let currentlyShown = 5;
+        const totalNews = newsCards.length;
+
+        // Hide cards beyond the first 5
+        newsCards.forEach((card, index) => {
+            if (index >= 5) {
+                card.style.display = 'none';
             }
         });
-    }
-});
+
+        if (loadMoreBtn) {
+            loadMoreBtn.addEventListener('click', function () {
+                const nextBatch = Math.min(currentlyShown + 5, totalNews);
+
+                // Show next 5 news with animation
+                for (let i = currentlyShown; i < nextBatch; i++) {
+                    if (newsCards[i]) {
+                        newsCards[i].style.display = 'block';
+                        setTimeout(() => {
+                            newsCards[i].style.opacity = '0';
+                            newsCards[i].style.transform = 'translateY(20px)';
+                            setTimeout(() => {
+                                newsCards[i].style.transition = 'all 0.4s ease';
+                                newsCards[i].style.opacity = '1';
+                                newsCards[i].style.transform = 'translateY(0)';
+                            }, 10);
+                        }, (i - currentlyShown) * 100);
+                    }
+                }
+
+                currentlyShown = nextBatch;
+
+                // Update button text
+                const remaining = totalNews - currentlyShown;
+                if (remaining > 0) {
+                    loadMoreBtn.querySelector('.btn-count').textContent = `(${remaining} remaining)`;
+                } else {
+                    // All news shown - hide button
+                    loadMoreBtn.style.opacity = '0';
+                    loadMoreBtn.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        document.getElementById('loadMoreSection').style.display = 'none';
+                    }, 300);
+                }
+            });
+        }
+    });
 </script>
 {% endblock %}

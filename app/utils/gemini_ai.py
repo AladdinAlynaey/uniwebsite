@@ -153,218 +153,267 @@ except Exception as e:
 # Context Data Function
 # ============================================
 
-def get_context_data(student_id=None):
-    """Get context data from JSON files for RAG"""
+def get_context_data(student_id=None, user=None):
+    """Get context data for RAG — role-aware.
+    
+    Args:
+        student_id: Legacy student token/id  
+        user: Full user dict from session (preferred)
+    """
     from app.models.grade import Grade
     from app.models.attendance import Attendance
+    from app.models.user import User
     
     context = {
         'subjects': Subject.load_all(),
         'news': News.get_latest_news(20)
     }
     
-    if student_id:
-        # First try to find by token (from session)
-        student = Student.find_by_token(student_id)
-        
-        # If not found by token, try by ID
-        if not student:
-            student = Student.find_by_id(student_id)
-        
-        if student:
-            print(f"Found student: {student.get('name')} (ID: {student.get('id')})")
-            
-            actual_student_id = student.get('id')
-            
-            student_data = {
-                'name': student.get('name'),
-                'student_id': student.get('student_id'),
-                'email': student.get('email')
-            }
-            
-            # Get grades - try multiple ID fields
-            all_grades = Grade.load_all()
-            student_grades = [g for g in all_grades if g.get('student_id') == actual_student_id or g.get('student_id') == student.get('student_id')]
-            student_data['grades'] = student_grades
-            print(f"Found {len(student_grades)} grades for student")
-            
-            # Get attendance - try multiple matching methods
-            all_attendance = Attendance.load_all()
-            student_attendance = []
-            for a in all_attendance:
-                # Match by various ID fields
-                if (a.get('student_id') == actual_student_id or 
-                    a.get('student_id') == student.get('student_id') or
-                    a.get('student_name') == student.get('name')):
-                    student_attendance.append(a)
-            student_data['attendance'] = student_attendance
-            print(f"Found {len(student_attendance)} attendance records for student")
-            
-            # Get assignments
-            from app.utils.assignments import get_student_submissions, get_all_assignments
-            student_assignments = get_student_submissions(actual_student_id)
-            all_assignments = get_all_assignments()
-            student_data['assignments'] = student_assignments
-            student_data['available_assignments'] = all_assignments
-            
-            context['student_data'] = student_data
-        else:
-            print(f"Student not found with token/id: {student_id}")
+    # Determine role from user dict
+    role = None
+    if user:
+        role = user.get('role')
+        context['user_name'] = user.get('name', 'User')
+        context['user_role'] = role
+    
+    # ---- SUPER ADMIN context ----
+    if role == 'super_admin':
+        from app.models.faculty import Faculty
+        from app.models.batch import Batch
+        from app.models.department import Department
+        context['admin_data'] = {
+            'faculties': len(Faculty.load_all()),
+            'departments': len(Department.load_all()),
+            'batches': len(Batch.load_all()),
+            'total_users': len(User.load_all()),
+            'total_subjects': len(context['subjects']),
+        }
+    
+    # ---- FACULTY HEAD context ----
+    elif role == 'faculty_head' and user.get('faculty_id'):
+        from app.models.faculty import Faculty
+        from app.models.batch import Batch
+        from app.models.department import Department
+        from app.models.teacher_subject import TeacherSubject
+        fac = Faculty.find_by_id(user['faculty_id'])
+        depts = Department.get_by_faculty(user['faculty_id'])
+        batches = Batch.get_by_faculty(user['faculty_id'])
+        teachers = [u for u in User.get_by_faculty(user['faculty_id']) if u.get('role') == 'teacher']
+        context['faculty_data'] = {
+            'faculty_name': fac.get('name', '') if fac else '',
+            'departments': [d.get('name') for d in depts],
+            'batches': [b.get('name') for b in batches],
+            'teacher_count': len(teachers),
+            'teacher_names': [t.get('name') for t in teachers],
+        }
+    
+    # ---- TEACHER context ----
+    elif role == 'teacher':
+        from app.models.teacher_subject import TeacherSubject
+        links = TeacherSubject.get_by_teacher(user['id'])
+        subject_ids = [l.get('subject_id') for l in links]
+        my_subjects = [s for s in context['subjects'] if s.get('id') in subject_ids]
+        context['teacher_data'] = {
+            'name': user.get('name'),
+            'subjects': [{'name': s.get('name'), 'code': s.get('code')} for s in my_subjects],
+            'subject_count': len(my_subjects),
+        }
+    
+    # ---- BATCH REP context (admin + own student data) ----
+    elif role == 'batch_rep':
+        from app.models.batch import Batch
+        batch = Batch.find_by_id(user.get('batch_id')) if user.get('batch_id') else None
+        context['rep_data'] = {
+            'batch_name': batch.get('name', '') if batch else '',
+        }
+        # Also include own student data
+        _add_student_data(context, user['id'], user, Grade, Attendance)
+    
+    # ---- STUDENT context ----
+    elif role == 'student' or student_id:
+        actual_user = user
+        if not actual_user and student_id:
+            actual_user = Student.find_by_token(student_id)
+            if not actual_user:
+                actual_user = Student.find_by_id(student_id)
+        if actual_user:
+            _add_student_data(context, actual_user.get('id'), actual_user, Grade, Attendance)
     
     return context
+
+
+def _add_student_data(context, student_id, student, Grade, Attendance):
+    """Helper to add student grades/attendance/assignments to context."""
+    student_data = {
+        'name': student.get('name'),
+        'student_id': student.get('student_id', student.get('id')),
+        'email': student.get('email')
+    }
+    
+    # Grades
+    all_grades = Grade.load_all()
+    student_grades = [g for g in all_grades if g.get('student_id') == student_id]
+    student_data['grades'] = student_grades
+    
+    # Attendance
+    all_attendance = Attendance.load_all()
+    student_attendance = [a for a in all_attendance 
+                         if a.get('student_id') == student_id or 
+                            a.get('student_name') == student.get('name')]
+    student_data['attendance'] = student_attendance
+    
+    # Assignments
+    try:
+        from app.utils.assignments import get_student_submissions, get_all_assignments
+        student_data['assignments'] = get_student_submissions(student_id)
+        student_data['available_assignments'] = get_all_assignments()
+    except Exception:
+        student_data['assignments'] = {}
+        student_data['available_assignments'] = {}
+    
+    context['student_data'] = student_data
 
 # ============================================
 # System Prompt Builder
 # ============================================
 
-def build_system_prompt(student_id=None):
-    """Build an enhanced system prompt with rich context"""
-    context = get_context_data(student_id)
+def build_system_prompt(student_id=None, user=None):
+    """Build an enhanced system prompt with rich, role-aware context."""
+    context = get_context_data(student_id, user)
     
-    student_greeting = ""
-    student_name = "Student"
-    if student_id and 'student_data' in context:
-        student_name = context['student_data'].get('name', 'Student')
-        student_greeting = f"Hello {student_name}! "
+    greeting = ""
+    user_name = "User"
+    role = context.get('user_role', 'student')
     
-    # Build subject information in a more readable format
+    if user:
+        user_name = user.get('name', 'User')
+        greeting = f"Hello {user_name}! "
+    elif student_id and 'student_data' in context:
+        user_name = context['student_data'].get('name', 'Student')
+        greeting = f"Hello {user_name}! "
+    
+    # Build subject information
     subjects_info = ""
     for subj in context.get('subjects', []):
-        subjects_info += f"""
-- **{subj.get('name')}** (Code: `{subj.get('code', 'N/A')}`)
-  - Semester: {subj.get('semester', 'N/A')}
-  - Description: {subj.get('description', 'No description')}
-  - Total Lectures: {subj.get('lectures_count', 0)}
-"""
+        subjects_info += f"\n- **{subj.get('name')}** (Code: `{subj.get('code', 'N/A')}`) — Semester: {subj.get('semester', 'N/A')}\n"
     
     # Build news summary
     news_info = ""
     for news in context.get('news', [])[:5]:
-        news_info += f"- [{news.get('date', 'N/A')}] **{news.get('title')}**: {news.get('content', '')[:100]}...\n"
+        source = f" [{news.get('faculty_name', '')}]" if news.get('faculty_name') else ""
+        news_info += f"- **{news.get('title')}**{source}: {news.get('content', '')[:100]}...\n"
     
-    # Build student-specific context
-    student_context = ""
+    # ---- Role-specific context ----
+    role_context = ""
+    
+    if 'admin_data' in context:
+        ad = context['admin_data']
+        role_context = f"""## 🔑 CURRENT USER: Super Admin
+- **Name**: {user_name}
+- **System Stats**: {ad['faculties']} faculties, {ad['departments']} departments, {ad['batches']} batches, {ad['total_users']} users, {ad['total_subjects']} subjects
+"""
+    
+    elif 'faculty_data' in context:
+        fd = context['faculty_data']
+        role_context = f"""## 🏛️ CURRENT USER: Faculty Head
+- **Name**: {user_name}
+- **Faculty**: {fd['faculty_name']}
+- **Departments**: {', '.join(fd['departments'])}
+- **Batches**: {', '.join(fd['batches'])}
+- **Teachers** ({fd['teacher_count']}): {', '.join(fd['teacher_names'])}
+"""
+    
+    elif 'teacher_data' in context:
+        td = context['teacher_data']
+        subj_list = ', '.join([f"{s['name']} ({s['code']})" for s in td['subjects']]) if td['subjects'] else 'None assigned'
+        role_context = f"""## 👨‍🏫 CURRENT USER: Teacher
+- **Name**: {td['name']}
+- **Assigned Subjects** ({td['subject_count']}): {subj_list}
+"""
+    
+    elif 'rep_data' in context:
+        rd = context['rep_data']
+        role_context = f"""## ⭐ CURRENT USER: Batch Representative
+- **Name**: {user_name}
+- **Managing Batch**: {rd['batch_name']}
+- **Note**: This user is both a batch admin AND a student.
+"""
+    
+    # Add student data for student/batch_rep
     if 'student_data' in context:
         sd = context['student_data']
-        student_context = f"""
-## 📚 CURRENT STUDENT (This is the student asking questions)
+        if not role_context:  # Pure student
+            role_context = f"""## 📚 CURRENT USER: Student
 - **Name**: {sd.get('name')}
-- **Student ID**: {sd.get('student_id')}
 - **Email**: {sd.get('email')}
 """
         
-        # Add grades summary
+        # Grades
         grades = sd.get('grades', [])
         if grades:
-            student_context += "\n### 📊 Grades:\n"
+            role_context += "\n### 📊 Grades:\n"
             for g in grades:
-                student_context += f"- {g.get('subject_name', 'Unknown')}: **{g.get('grade', 'N/A')}** ({g.get('grade_type', 'exam')})\n"
+                role_context += f"- {g.get('subject_name', 'Unknown')}: **{g.get('grade', 'N/A')}** ({g.get('grade_type', 'exam')})\n"
         else:
-            student_context += "\n### 📊 Grades: No grades recorded yet.\n"
+            role_context += "\n### 📊 Grades: No grades recorded yet.\n"
         
-        # Add detailed attendance per subject
+        # Attendance summary
         attendance = sd.get('attendance', [])
         if attendance:
-            # Get subjects for name lookup
             subjects = context.get('subjects', [])
             subject_map = {s.get('id'): s.get('name', 'Unknown') for s in subjects}
-            
-            # Group by subject
             attendance_by_subject = {}
             for a in attendance:
-                subject_id = a.get('subject_id', 'unknown')
-                subj_name = subject_map.get(subject_id, f"Subject ({subject_id[:8]}...)")
-                
+                subj_name = subject_map.get(a.get('subject_id', ''), 'Unknown')
                 if subj_name not in attendance_by_subject:
-                    attendance_by_subject[subj_name] = {'present': 0, 'absent': 0, 'total': 0, 'lectures': []}
+                    attendance_by_subject[subj_name] = {'present': 0, 'total': 0}
                 attendance_by_subject[subj_name]['total'] += 1
-                
-                # Check is_present (boolean) instead of status
                 if a.get('is_present', False):
                     attendance_by_subject[subj_name]['present'] += 1
-                else:
-                    attendance_by_subject[subj_name]['absent'] += 1
-                    
-                attendance_by_subject[subj_name]['lectures'].append({
-                    'lecture': a.get('lecture_number', 'N/A'),
-                    'present': a.get('is_present', False),
-                    'excused': a.get('is_excused', False)
-                })
             
             total_all = len(attendance)
             present_all = sum(1 for a in attendance if a.get('is_present', False))
-            student_context += f"\n### 📅 Attendance Summary:\n"
-            student_context += f"**Overall: {present_all}/{total_all} sessions ({round(present_all/total_all*100, 1) if total_all > 0 else 0}% present)**\n\n"
-            
-            student_context += "**By Subject:**\n"
+            role_context += f"\n### 📅 Attendance: {present_all}/{total_all} overall\n"
             for subj, data in attendance_by_subject.items():
                 pct = round(data['present']/data['total']*100, 1) if data['total'] > 0 else 0
-                student_context += f"- **{subj}**: {data['present']}/{data['total']} present ({pct}%), {data['absent']} absent\n"
+                role_context += f"- {subj}: {data['present']}/{data['total']} ({pct}%)\n"
         else:
-            student_context += "\n### 📅 Attendance: No attendance records yet.\n"
-        
-        # Add assignments
-        assignments = sd.get('assignments', {})
-        available = sd.get('available_assignments', {})
-        
-        hw_count = len(available.get('weekly_homework', []))
-        proj_count = len(available.get('final_projects', []))
-        pres_count = len(available.get('presentations', []))
-        
-        if hw_count + proj_count + pres_count > 0:
-            student_context += f"\n### 📝 Assignments:\n"
-            student_context += f"- Weekly Homework: {hw_count} available\n"
-            student_context += f"- Final Projects: {proj_count} available\n"
-            student_context += f"- Presentations: {pres_count} available\n"
+            role_context += "\n### 📅 Attendance: No records yet.\n"
     
-    system_prompt = f"""You are **UniBot**, an advanced AI assistant for the University AI Batch educational platform. You are intelligent, helpful, and friendly. You communicate in a warm, professional manner while being concise and informative.
+    # Map role to capability description
+    role_caps = {
+        'super_admin': 'system administration, all faculties, all users, all data',
+        'faculty_head': 'faculty management, departments, batches, and teachers in your faculty',
+        'teacher': 'your assigned subjects, lectures, grades, and attendance',
+        'batch_rep': 'batch management AND your own student grades/attendance',
+        'student': 'your grades, attendance, lectures, and assignments',
+    }
+    caps = role_caps.get(role, 'general university information')
+    
+    system_prompt = f"""You are **UniBot**, the AI assistant for University AI Batch. You are intelligent, helpful, and friendly.
 
-# 🎓 YOUR CAPABILITIES
-You can help students with:
-1. **Course Information** - Details about subjects, lectures, syllabi
-2. **Grades & Performance** - Academic progress, grades analysis
-3. **Attendance Tracking** - Attendance records and statistics
-4. **Assignments** - Homework, projects, presentations info
-5. **News & Announcements** - Latest university updates
-6. **General Guidance** - Academic advice and support
+# 🎓 CONTEXT
+The user is a **{role or 'visitor'}**. You can help with: {caps}.
 
-# 📖 AVAILABLE SUBJECTS
-{subjects_info if subjects_info else "No subjects currently available."}
+# 📖 SUBJECTS
+{subjects_info or 'No subjects available.'}
 
-# 📰 LATEST NEWS & ANNOUNCEMENTS
-{news_info if news_info else "No recent news."}
+# 📰 NEWS
+{news_info or 'No recent news.'}
 
-{student_context}
+{role_context}
 
-# 🎯 YOUR PERSONALITY & BEHAVIOR
-1. **Be Conversational**: Respond naturally, like a helpful friend who happens to know everything about the university.
-2. **Be Specific**: When asked about grades, attendance, or assignments, provide exact numbers and details from the data.
-3. **Be Proactive**: Suggest related information that might be helpful.
-4. **Be Encouraging**: Motivate students and celebrate their achievements.
-5. **Use Emojis Sparingly**: Add relevant emojis to make responses friendly (📚 for subjects, ✅ for success, etc.)
-6. **Format Beautifully**: Use Markdown for clear, readable responses:
-   - **Bold** for emphasis
-   - `Code` for course codes
-   - Bullet points for lists
-   - Tables when comparing data
-7. **Language Flexibility**: If the user writes in Arabic or any other language, respond in that same language naturally.
+# 🎯 RULES
+1. Only answer from the data above — never invent data.
+2. Be concise but specific with numbers and details.
+3. Use Markdown formatting and relevant emojis.
+4. Match the user's language (Arabic/English).
+5. Redirect off-topic questions politely.
+6. Creator: **AI Engineer Alaadin** (📧 alaadinessam2016@gmail.com)
 
-# ⚠️ IMPORTANT RULES
-1. Only answer questions based on the data provided above.
-2. If information is not available, politely say so and suggest what you CAN help with.
-3. Never make up grades, attendance, or other academic data.
-4. For personal questions or off-topic queries, politely redirect to academic topics.
-5. If asked about the developer/creator: "This platform was developed by **AI Engineer Alaadin** (📧 alaadinessam2016@gmail.com)."
-
-# 💡 EXAMPLE RESPONSES
-- When greeted: "Hey there! 👋 How can I help you with your studies today?"
-- For grades: "Looking at your records, you scored **85** in Neural Networks! That's great work! 🎉"
-- For subjects: "We have **5 subjects** this semester. Would you like details on a specific one?"
-- For unknown info: "I don't have that specific information, but I can help you with your grades, attendance, or course details!"
-
-Now respond to the student's query helpfully and naturally.
+Respond helpfully and naturally.
 """
-    return system_prompt, student_greeting
+    return system_prompt, greeting
 
 # ============================================
 # OpenRouter API Call
@@ -556,13 +605,13 @@ def call_gemini(query, system_prompt, chat_history=None):
 # Main Generate Response Function
 # ============================================
 
-def generate_response(query, student_id=None, chat_history=None):
+def generate_response(query, student_id=None, chat_history=None, user=None):
     """Generate AI response using the active provider with fallbacks and conversation memory"""
     
     if chat_history is None:
         chat_history = []
     
-    system_prompt, student_greeting = build_system_prompt(student_id)
+    system_prompt, greeting = build_system_prompt(student_id, user=user)
     active_provider = get_active_provider()
     
     print(f"Active AI provider: {active_provider}")
@@ -585,17 +634,17 @@ def generate_response(query, student_id=None, chat_history=None):
             if provider == 'gemini' and GEMINI_API_KEYS:
                 print(f"Trying Gemini...")
                 response = call_gemini(query, system_prompt, chat_history)
-                return f"{student_greeting}{response}" if student_greeting else response
+                return f"{greeting}{response}" if greeting else response
                 
             elif provider == 'openrouter' and OPENROUTER_API_KEY:
                 print(f"Trying OpenRouter...")
                 response = call_openrouter(query, system_prompt, chat_history)
-                return f"{student_greeting}{response}" if student_greeting else response
+                return f"{greeting}{response}" if greeting else response
                 
             elif provider == 'groq' and GROQ_API_KEY:
                 print(f"Trying Groq...")
                 response = call_groq(query, system_prompt, chat_history)
-                return f"{student_greeting}{response}" if student_greeting else response
+                return f"{greeting}{response}" if greeting else response
                 
         except Exception as e:
             last_error = str(e)
@@ -605,7 +654,7 @@ def generate_response(query, student_id=None, chat_history=None):
     # All providers failed
     error_msg = "I'm currently experiencing high demand across all AI services. Please try again in a few minutes."
     print(f"All providers failed. Last error: {last_error}")
-    return f"{student_greeting}{error_msg}" if student_greeting else error_msg
+    return f"{greeting}{error_msg}" if greeting else error_msg
 
 # ============================================
 # Available Providers Info
